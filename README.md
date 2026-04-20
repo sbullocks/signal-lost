@@ -6,7 +6,7 @@
 
 A self-aware, surrealist single-page web experience. Glitch art meets brutalist design meets experimental digital artifact. The site knows you're there. It reacts to everything.
 
-Built with Claude Design + Claude Code. Pure HTML/CSS/JS — no dependencies, no framework, no build step.
+Pure HTML/CSS/JS — no dependencies, no framework, no build step.
 
 ---
 

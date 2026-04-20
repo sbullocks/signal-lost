@@ -1800,6 +1800,8 @@ setTimeout(() => {
   console.log('%c// there is a hidden function in this console.', 'color:#111;font-family:monospace;font-size:10px;');
   console.log('%c// type  signal()  and press Enter to use it.', 'color:#111;font-family:monospace;font-size:10px;');
   console.log('%c// or don\'t. the signal doesn\'t need your permission.', 'color:#0a0a0a;font-family:monospace;font-size:10px;');
+  console.log('%c// there are also sequences. old ones. from old games.', 'color:#0a0a0a;font-family:monospace;font-size:10px;');
+  console.log('%c// ↑ ↑ ↓ ↓ ← → ← → ...', 'color:#0d0d0d;font-family:monospace;font-size:10px;');
 
   window.signal = function() {
     console.clear();
@@ -2093,9 +2095,10 @@ const TERM_COMMANDS = {
     { cls:'t-out', t: '  decrypt        attempt payload decryption' },
     { cls:'t-out', t: '  ping           test signal connection' },
     { cls:'t-out', t: '  signal         confirm transmission' },
+    { cls:'t-out', t: '  konami         access method lookup' },
     { cls:'t-out', t: '  clear          clear terminal' },
     { cls:'t-out', t: '  exit           attempt session termination' },
-    { cls:'t-dim', t: '  [7 easter eggs are hidden in this page]' },
+    { cls:'t-dim', t: '  [7 signals are hidden in this page]' },
   ],
   whoami: () => [{ cls:'t-hi', t: 'visitor. anomalous. expected. welcome.' }],
   'ls /secrets/': () => [
@@ -2124,6 +2127,12 @@ const TERM_COMMANDS = {
     { cls:'t-err', t: 'bash: exit: cannot terminate watched session' },
     { cls:'t-warn', t: 'you are not able to leave this terminal.' },
     { cls:'t-out', t: 'we apologize for any inconvenience.' },
+  ],
+  konami: () => [
+    { cls:'t-out', t: 'access method located in registry.' },
+    { cls:'t-hi',  t: '↑ ↑ ↓ ↓ ← → ← → B A' },
+    { cls:'t-out', t: 'use arrow keys. then the letters.' },
+    { cls:'t-dim', t: 'you already knew this.' },
   ],
   clear: () => 'CLEAR',
 };
