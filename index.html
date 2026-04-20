@@ -1,0 +1,2277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGNAL_LOST // YOU FOUND IT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,900;1,900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #060608;
+  --blue: #00d4ff;
+  --green: #39ff14;
+  --pink: #ff006e;
+  --red: #ff2200;
+  --white: #e8e8e0;
+  --dim: #3a3a3a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Space Mono', monospace;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* SCANLINES */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px);
+  pointer-events: none; z-index: 9998;
+  animation: scanroll 8s linear infinite;
+}
+@keyframes scanroll { from { background-position: 0 0; } to { background-position: 0 100px; } }
+
+/* VIGNETTE */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.75) 100%);
+  pointer-events: none; z-index: 9997;
+}
+
+/* NOISE */
+.noise {
+  position: fixed; inset: -50%; width: 200%; height: 200%;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9996;
+  animation: noisemove 0.5s steps(2) infinite;
+}
+@keyframes noisemove {
+  0%  { transform: translate(0,0); }
+  25% { transform: translate(-2%,-3%); }
+  50% { transform: translate(3%,2%); }
+  75% { transform: translate(-1%,4%); }
+  100%{ transform: translate(2%,-1%); }
+}
+
+/* GLOBAL GLITCH FLASH */
+.glitch-flash {
+  position: fixed; inset: 0;
+  background: var(--blue); opacity: 0;
+  pointer-events: none; z-index: 9999;
+  mix-blend-mode: overlay; transition: opacity 0.05s;
+}
+
+/* ─── HERO ─── */
+#hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; padding: 0 6vw;
+  position: relative; overflow: hidden;
+  border-bottom: 1px solid var(--dim);
+}
+.hero-bg-text {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(6rem,22vw,22rem);
+  font-weight: 900; font-style: italic;
+  white-space: nowrap; opacity: 0.03;
+  color: var(--white); user-select: none;
+  letter-spacing: -0.05em; pointer-events: none;
+}
+.hero-eyebrow {
+  font-size: 0.65rem; letter-spacing: 0.35em;
+  color: var(--green); text-transform: uppercase;
+  margin-bottom: 2rem; position: relative;
+}
+.hero-eyebrow::before { content: '> '; color: var(--pink); }
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(4rem,14vw,13rem);
+  font-weight: 900; line-height: 0.88;
+  position: relative; letter-spacing: -0.03em; user-select: none;
+}
+.hero-title .line1 { color: var(--white); display: block; }
+.hero-title .line2 {
+  color: transparent; -webkit-text-stroke: 1px var(--blue);
+  display: block; margin-left: 3vw; position: relative;
+}
+.hero-title::before, .hero-title::after {
+  content: attr(data-text); position: absolute; top: 0; left: 0;
+  font-family: inherit; font-size: inherit; font-weight: inherit;
+  line-height: inherit; letter-spacing: inherit; width: 100%; overflow: hidden;
+}
+.hero-title::before {
+  color: var(--pink); animation: glitch-clip-1 3.5s infinite;
+  clip-path: polygon(0 20%,100% 20%,100% 40%,0 40%);
+  transform: translate(-4px,0); opacity: 0.7;
+}
+.hero-title::after {
+  color: var(--blue); animation: glitch-clip-2 4s infinite;
+  clip-path: polygon(0 60%,100% 60%,100% 75%,0 75%);
+  transform: translate(4px,0); opacity: 0.7;
+}
+@keyframes glitch-clip-1 {
+  0%,92%,100% { opacity:0; transform:translate(0,0); }
+  93%  { opacity:.7; transform:translate(-6px,0); clip-path:polygon(0 15%,100% 15%,100% 35%,0 35%); }
+  95%  { opacity:.7; transform:translate(4px,0); clip-path:polygon(0 55%,100% 55%,100% 70%,0 70%); }
+  97%  { opacity:.7; transform:translate(-3px,2px); clip-path:polygon(0 28%,100% 28%,100% 50%,0 50%); }
+  99%  { opacity:0; }
+}
+@keyframes glitch-clip-2 {
+  0%,88%,100% { opacity:0; transform:translate(0,0); }
+  89%  { opacity:.7; transform:translate(6px,-2px); clip-path:polygon(0 62%,100% 62%,100% 80%,0 80%); }
+  91%  { opacity:.7; transform:translate(-4px,0); clip-path:polygon(0 5%,100% 5%,100% 22%,0 22%); }
+  93%  { opacity:0; }
+}
+.hero-sub {
+  margin-top: 3rem; font-size: 0.7rem;
+  letter-spacing: 0.2em; color: var(--dim);
+  max-width: 28rem; line-height: 2;
+}
+.hero-sub span { color: var(--red); }
+.hero-coords {
+  position: absolute; right: 6vw; bottom: 4rem;
+  text-align: right; font-size: 0.6rem;
+  letter-spacing: 0.15em; color: var(--dim); line-height: 2;
+}
+.hero-coords .live { color: var(--green); animation: blink 1.2s step-end infinite; }
+.hero-corner {
+  position: absolute; top: 2rem; right: 6vw;
+  font-size: 0.6rem; color: var(--dim); letter-spacing: 0.1em;
+}
+.hero-corner::after {
+  content: ''; display: inline-block;
+  width: 6px; height: 6px; background: var(--red);
+  border-radius: 50%; margin-left: 8px; vertical-align: middle;
+  animation: blink 0.8s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.crosshair {
+  position: fixed; width: 20px; height: 20px;
+  pointer-events: none; z-index: 9995;
+  transform: translate(-50%,-50%); transition: transform 0.05s;
+}
+.crosshair::before, .crosshair::after {
+  content: ''; position: absolute; background: var(--green); opacity: 0.5;
+}
+.crosshair::before { width: 1px; height: 100%; left: 50%; top: 0; }
+.crosshair::after  { width: 100%; height: 1px; top: 50%; left: 0; }
+
+/* ─── TERMINAL ─── */
+#terminal { padding: 8rem 6vw; position: relative; border-bottom: 1px solid var(--dim); }
+.terminal-label { font-size: 0.6rem; letter-spacing: 0.4em; color: var(--pink); text-transform: uppercase; margin-bottom: 2rem; }
+.terminal-window {
+  background: #0a0a0c; border: 1px solid #222;
+  max-width: 720px; position: relative; transform: rotate(-0.5deg);
+  box-shadow: 0 0 0 1px #111, 4px 4px 0 0 var(--blue), 8px 8px 0 0 rgba(0,212,255,0.15);
+}
+.terminal-window::before {
+  content: 'SIGNAL_LOST // SHELL v0.0.7 [UNSTABLE]';
+  display: block; background: #111; border-bottom: 1px solid #1a1a1a;
+  padding: 0.6rem 1rem; font-size: 0.6rem; letter-spacing: 0.2em; color: var(--dim);
+}
+.terminal-body { padding: 1.5rem; font-size: 0.75rem; line-height: 2; min-height: 320px; }
+.t-line { display: block; }
+.t-prompt { color: var(--green); }
+.t-cmd    { color: var(--white); }
+.t-out    { color: var(--dim); padding-left: 1rem; }
+.t-err    { color: var(--red); }
+.t-warn   { color: var(--pink); }
+.t-hi     { color: var(--blue); }
+.cursor {
+  display: inline-block; width: 8px; height: 1em;
+  background: var(--green); vertical-align: middle;
+  animation: blink 0.7s step-end infinite; margin-left: 2px;
+}
+.terminal-aside {
+  position: absolute; right: -2rem; top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  font-size: 0.55rem; letter-spacing: 0.3em;
+  color: var(--dim); white-space: nowrap;
+}
+
+/* ─── AWARE ─── */
+#aware { padding: 8rem 6vw; position: relative; border-bottom: 1px solid var(--dim); overflow: hidden; }
+.aware-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
+.aware-block { padding: 3rem 2rem; border: 1px solid #1a1a1a; position: relative; }
+.aware-block:nth-child(2) { border-color: var(--blue); transform: translateY(-8px); }
+.aware-block:nth-child(5) { border-color: var(--pink); transform: translateY(12px); }
+.aware-block-num { font-size: 0.55rem; letter-spacing: 0.3em; color: var(--dim); margin-bottom: 1.5rem; }
+.aware-block-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.2rem,2.5vw,2rem); font-weight: 900; font-style: italic;
+  line-height: 1.1; margin-bottom: 1rem;
+}
+.aware-block-body { font-size: 0.65rem; line-height: 2; color: #666; }
+.aware-bg-num {
+  position: absolute; bottom: -1rem; right: 1rem;
+  font-family: 'Playfair Display', serif; font-size: 8rem;
+  font-weight: 900; color: rgba(255,255,255,0.03); line-height: 1; user-select: none;
+}
+.aware-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem,8vw,7rem); font-weight: 900; font-style: italic;
+  line-height: 0.9; letter-spacing: -0.03em; margin-bottom: 5rem;
+  color: var(--white); position: relative;
+}
+.aware-headline em { color: var(--pink); font-style: normal; }
+.aware-headline .stroke { color: transparent; -webkit-text-stroke: 1px var(--green); }
+
+/* ─── GALLERY ─── */
+#gallery { padding: 8rem 6vw; border-bottom: 1px solid var(--dim); }
+.gallery-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem; }
+.gallery-title { font-size: 0.6rem; letter-spacing: 0.4em; color: var(--green); text-transform: uppercase; }
+.gallery-count { font-size: 0.6rem; color: var(--dim); letter-spacing: 0.2em; }
+.gallery-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+.glitch-img {
+  position: relative; aspect-ratio: 4/3; overflow: hidden;
+  cursor: pointer; background: #0d0d10;
+}
+.glitch-img:nth-child(2) { margin-top: -2rem; }
+.glitch-img:nth-child(4) { margin-top: 3rem; }
+.glitch-img:nth-child(6) { margin-top: -1.5rem; }
+.glitch-img::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.025) 6px, rgba(255,255,255,0.025) 12px);
+}
+.glitch-img .img-stripe {
+  position: absolute; inset: 0; display: flex;
+  flex-direction: column; justify-content: center; align-items: center; gap: 0.5rem;
+}
+.img-label { font-size: 0.55rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--dim); text-align: center; }
+.glitch-img .scanline-h {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: var(--blue); opacity: 0; animation: scanh 3s linear infinite;
+}
+.glitch-img:nth-child(odd) .scanline-h { animation-delay: -1.2s; background: var(--pink); }
+.glitch-img:nth-child(3n) .scanline-h  { animation-delay: -0.6s; background: var(--green); }
+@keyframes scanh { 0% { top:0%; opacity:0.7; } 100% { top:100%; opacity:0; } }
+.glitch-img:hover { outline: 1px solid var(--blue); outline-offset: -1px; }
+.glitch-img::after {
+  content: attr(data-id); position: absolute; bottom: 0.5rem; right: 0.75rem;
+  font-size: 0.5rem; letter-spacing: 0.2em; color: var(--dim);
+}
+
+/* ─── LOADING ─── */
+#loading { padding: 8rem 6vw; border-bottom: 1px solid var(--dim); position: relative; overflow: hidden; }
+.loading-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem,7vw,5.5rem); font-weight: 900; font-style: italic;
+  margin-bottom: 5rem; color: var(--white);
+}
+.loading-title .shimmer {
+  background: linear-gradient(90deg,var(--white) 0%,var(--blue) 30%,var(--white) 60%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.bars { display: flex; flex-direction: column; gap: 2rem; max-width: 600px; }
+.bar-row { position: relative; }
+.bar-label { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.6rem; letter-spacing: 0.2em; }
+.bar-label .pct { color: var(--dim); }
+.bar-track { height: 3px; background: #111; position: relative; overflow: hidden; }
+.bar-fill { height: 100%; position: relative; transform-origin: left; }
+.bar-fill::after {
+  content: ''; position: absolute; right: 0; top: -3px;
+  width: 1px; height: 9px; background: inherit; filter: blur(2px);
+}
+.bar-stuck { animation: stuck 4s ease-in-out infinite; }
+@keyframes stuck {
+  0%,45%,100% { width: var(--stuck-w); }
+  50%,95% { width: calc(var(--stuck-w) + 2%); }
+}
+.spinner-row { display: flex; align-items: center; gap: 2rem; margin-top: 4rem; }
+.spinner {
+  width: 24px; height: 24px; border: 1px solid #222;
+  border-top-color: var(--pink); border-radius: 50%; animation: spin 1.2s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner-text { font-size: 0.65rem; letter-spacing: 0.2em; color: var(--dim); }
+.spinner-text .blink { animation: blink 1s step-end infinite; }
+.loading-error {
+  margin-top: 3rem; font-size: 0.6rem; color: var(--red);
+  letter-spacing: 0.1em; line-height: 2.2;
+  padding: 1rem 1.5rem; border-left: 1px solid var(--red);
+}
+.corrupt-text-block {
+  position: absolute; right: 6vw; top: 50%; transform: translateY(-50%);
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(4rem,10vw,9rem); font-weight: 900; font-style: italic;
+  text-align: right; line-height: 0.85; color: transparent;
+  -webkit-text-stroke: 0.5px rgba(255,255,255,0.12); user-select: none;
+}
+
+/* ─── MARQUEE ─── */
+#marquee-wrap {
+  border-top: 1px solid var(--dim); border-bottom: 1px solid var(--dim);
+  padding: 1rem 0; overflow: hidden; white-space: nowrap;
+}
+.marquee-track { display: inline-flex; gap: 4rem; animation: marquee 18s linear infinite; }
+.marquee-item {
+  font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--dim); display: inline-flex; align-items: center; gap: 2rem;
+}
+.marquee-item .sep { color: var(--pink); }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ─── FOOTER ─── */
+#footer { padding: 8rem 6vw 4rem; position: relative; overflow: hidden; }
+.footer-error-box {
+  border: 1px solid var(--red); padding: 2rem 2.5rem;
+  max-width: 800px; position: relative; margin-bottom: 6rem;
+  transform: rotate(0.3deg);
+}
+.footer-error-box::before {
+  content: '■ SYSTEM ERROR  0x0000_DEAD  0xCAFEBABE  0xFF06E';
+  display: block; background: var(--red); color: #000;
+  padding: 0.4rem 0.75rem; font-size: 0.6rem; letter-spacing: 0.2em;
+  margin: -2rem -2.5rem 2rem; font-weight: 700;
+}
+.error-body { font-size: 0.65rem; line-height: 2.2; color: var(--dim); }
+.error-body .highlight { color: var(--white); }
+.error-body .err-code  { color: var(--red); }
+.error-body .ok        { color: var(--green); }
+.error-body .warn      { color: var(--pink); }
+.error-dump { margin-top: 1.5rem; font-size: 0.55rem; color: #333; line-height: 1.8; letter-spacing: 0.05em; }
+.footer-bottom { display: flex; justify-content: space-between; align-items: flex-end; font-size: 0.55rem; letter-spacing: 0.2em; color: #333; }
+.footer-sig {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem,10vw,9rem); font-weight: 900; font-style: italic;
+  color: transparent; -webkit-text-stroke: 1px #222; line-height: 1;
+  letter-spacing: -0.03em; margin-bottom: 3rem; user-select: none; cursor: pointer;
+}
+.section-rule { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 5rem; }
+.section-rule::before { content: ''; display: block; width: 2rem; height: 1px; background: var(--dim); }
+.section-rule-text { font-size: 0.55rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--dim); }
+.eye-wrap { display: inline-flex; gap: 0.5rem; align-items: center; margin-top: 3rem; }
+.eye { width: 28px; height: 16px; border-radius: 50%; border: 1px solid var(--dim); position: relative; overflow: hidden; }
+.pupil { position: absolute; width: 8px; height: 8px; background: var(--blue); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%,-50%); transition: transform 0.1s; }
+[data-secret] { position: relative; cursor: help; }
+[data-secret]:hover::after {
+  content: attr(data-secret); position: absolute; bottom: 110%; left: 0;
+  background: #0a0a0c; border: 1px solid var(--green); color: var(--green);
+  font-size: 0.55rem; letter-spacing: 0.15em; padding: 0.5rem 0.75rem; white-space: nowrap; z-index: 100;
+}
+.corrupt-word { display: inline-block; min-width: 3ch; }
+
+/* ─── NEW: SELECTION ─── */
+::selection { background: #39ff14; color: #000; }
+
+/* ─── NEW: SR-ONLY ─── */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* ─── NEW: CURSOR TRAIL ─── */
+.trail-dot { position: fixed; border-radius: 50%; pointer-events: none; z-index: 9993; transform: translate(-50%,-50%); mix-blend-mode: screen; }
+
+/* ─── NEW: PARTICLE CANVAS ─── */
+#particle-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+/* ─── NEW: SECRET ROOM ─── */
+#secret-room {
+  display: none; position: fixed; inset: 0; background: #000;
+  z-index: 99999; overflow: hidden; overflow-y: auto;
+}
+#sr-scanlines {
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.04) 2px, rgba(0,212,255,0.04) 4px);
+  pointer-events: none; z-index: 1;
+}
+#sr-wave { position: fixed; bottom: 0; left: 0; right: 0; height: 100px; z-index: 0; pointer-events: none; }
+#sr-inner { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 6rem 4vw; text-align: center; }
+.sr-fade { opacity: 0; transition: opacity 0.8s; }
+
+/* ─── NEW: CONTEXT MENU ─── */
+#ctx-menu {
+  display: none; position: fixed; z-index: 99998;
+  background: #0a0a0c; border: 1px solid #1a1a1a;
+  font-family: 'Space Mono', monospace; font-size: 0.58rem;
+  letter-spacing: 0.08em; min-width: 300px;
+  box-shadow: 4px 4px 0 0 var(--blue), 0 0 40px rgba(0,212,255,0.08);
+}
+.ctx-header { padding: 0.5rem 1rem; background: #0f0f12; color: var(--green); font-size: 0.5rem; letter-spacing: 0.35em; border-bottom: 1px solid #1a1a1a; }
+.ctx-item { padding: 0.65rem 1.2rem; display: flex; justify-content: space-between; gap: 2rem; cursor: pointer; border-bottom: 1px solid #0d0d0f; color: #555; transition: background 0.1s, color 0.1s; }
+.ctx-item:hover { background: #111; color: var(--white); }
+.ctx-item.ctx-danger:hover { color: var(--red); }
+.ctx-item.ctx-ok:hover { color: var(--green); }
+.ctx-sep { height: 1px; background: #151517; margin: 0.2rem 0; }
+.ctx-tag { color: #2a2a2a; font-size: 0.5rem; }
+
+/* ─── NEW: CONNECTION DROP ─── */
+#conn-drop {
+  position: fixed; inset: 0; z-index: 99994; background: rgba(0,0,0,0.97);
+  display: none; flex-direction: column; justify-content: center;
+  align-items: center; font-family: 'Space Mono', monospace; text-align: center;
+}
+@keyframes conn-progress { 0% { width:0%; } 70% { width:65%; } 80% { width:67%; } 100% { width:100%; } }
+
+/* ─── NEW: SIGNAL OVERLAY ─── */
+#signal-overlay {
+  position: fixed; inset: 0; z-index: 99993;
+  pointer-events: none; display: flex;
+  justify-content: center; align-items: center;
+  background: rgba(0,0,0,0.8); opacity: 0; transition: opacity 0.15s;
+}
+
+/* ─── NEW: GALLERY SECRET ─── */
+#gallery-secret {
+  display: none; position: fixed; inset: 0; z-index: 99992;
+  background: rgba(0,0,0,0.97); flex-direction: column;
+  justify-content: center; align-items: center;
+  font-family: 'Space Mono', monospace; text-align: center; padding: 4rem;
+}
+
+/* ─── NEW: EXIT INTENT ─── */
+#exit-intent {
+  display: none; position: fixed; inset: 0; z-index: 99991;
+  background: rgba(0,0,0,0.97); flex-direction: column;
+  justify-content: center; align-items: center;
+  font-family: 'Space Mono', monospace; text-align: center; padding: 4rem;
+}
+
+/* ─── NEW: IDLE MSG ─── */
+#idle-msg {
+  position: fixed; bottom: 2rem; left: 2rem;
+  font-family: 'Space Mono', monospace; font-size: 0.6rem;
+  letter-spacing: 0.12em; color: var(--dim); z-index: 9990;
+  opacity: 0; transition: opacity 0.5s;
+  max-width: 280px; line-height: 1.8;
+  border-left: 1px solid #1a1a1a; padding-left: 1rem;
+}
+#idle-msg.vis { opacity: 1; }
+
+/* ─── NEW: 3AM MODE ─── */
+body.mode-3am .hero-title .line1 { color: var(--pink); }
+body.mode-3am .hero-eyebrow { color: var(--red); }
+
+/* ─── NEW: SHAKE + INVERT ─── */
+@keyframes shake {
+  0%,100% { transform: translate(0,0); }
+  10% { transform: translate(-2px,-1px); }
+  20% { transform: translate(2px,0); }
+  30% { transform: translate(-1px,2px); }
+  40% { transform: translate(2px,-1px); }
+  50% { transform: translate(-2px,0); }
+  60% { transform: translate(0,2px); }
+  70% { transform: translate(2px,1px); }
+  80% { transform: translate(-1px,0); }
+  90% { transform: translate(1px,-2px); }
+}
+
+@keyframes indeterminate {
+  0%   { transform:translateX(-100%); width:40%; }
+  50%  { transform:translateX(150%); width:40%; }
+  100% { transform:translateX(-100%); width:40%; }
+}
+
+/* ─── BOOT SCREEN ─── */
+#boot-screen {
+  position: fixed; inset: 0; background: #000;
+  z-index: 999999; display: flex; flex-direction: column;
+  justify-content: flex-start; padding: 3rem 4vw;
+  font-family: 'Space Mono', monospace; overflow: hidden;
+}
+#boot-lines { font-size: 0.65rem; line-height: 1.9; letter-spacing: 0.05em; }
+.boot-line { display: block; }
+.boot-ok   { color: #39ff14; }
+.boot-warn { color: #ff2200; }
+.boot-dim  { color: #2a2a2a; }
+.boot-hi   { color: #00d4ff; }
+#boot-bsod {
+  display: none; position: absolute; inset: 0;
+  background: #00d4ff; color: #000;
+  display: none; flex-direction: column;
+  justify-content: center; align-items: flex-start;
+  padding: 8vw; font-family: 'Space Mono', monospace;
+}
+#boot-skip {
+  position: absolute; bottom: 2rem; right: 3rem;
+  font-size: 0.5rem; letter-spacing: 0.3em; color: #1a1a1a;
+  cursor: pointer; opacity: 0; transition: opacity 1s;
+}
+#boot-skip.vis { opacity: 1; }
+#boot-skip:hover { color: #fff; }
+
+/* ─── AUDIO TOGGLE ─── */
+#audio-toggle {
+  position: fixed; top: 1.5rem; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.48rem; letter-spacing: 0.3em;
+  color: #1a1a1a; background: transparent;
+  border: 1px solid #1a1a1a; padding: 0.4rem 0.8rem;
+  cursor: pointer; z-index: 9990;
+  transition: color 0.2s, border-color 0.2s;
+}
+#audio-toggle:hover { color: var(--dim); border-color: var(--dim); }
+#audio-toggle.active { color: var(--green); border-color: var(--green); }
+
+/* ─── EGG TRACKER ─── */
+#egg-tracker {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  font-family: 'Space Mono', monospace; font-size: 0.5rem;
+  letter-spacing: 0.25em; color: #1a1a1a;
+  border: 1px solid #111; padding: 0.4rem 0.75rem;
+  z-index: 9991; transition: color 0.4s, border-color 0.4s;
+  cursor: help;
+}
+#egg-tracker.found-some { color: var(--dim); border-color: #222; }
+#egg-tracker.found-all  { color: var(--green); border-color: var(--green); animation: tracker-pulse 1.5s ease-in-out infinite; }
+@keyframes tracker-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(57,255,20,0); } 50% { box-shadow: 0 0 12px 2px rgba(57,255,20,0.25); } }
+
+/* ─── FINAL UNLOCK ─── */
+#final-unlock {
+  display: none; position: fixed; inset: 0; z-index: 99990;
+  background: #000; flex-direction: column;
+  justify-content: center; align-items: center;
+  font-family: 'Space Mono', monospace; text-align: center;
+  padding: 4rem;
+}
+@keyframes gold-pulse { 0%,100% { color: #39ff14; } 50% { color: #00d4ff; } }
+
+/* ─── INTERACTIVE TERMINAL INPUT ─── */
+#term-input-wrap {
+  display: none; padding: 0 1.5rem 1.5rem;
+  border-top: 1px solid #111; margin-top: 0.5rem;
+}
+#term-input {
+  background: transparent; border: none; outline: none;
+  font-family: 'Space Mono', monospace; font-size: 0.75rem;
+  color: var(--white); width: calc(100% - 2rem); caret-color: var(--green);
+}
+.term-input-prompt { color: var(--green); font-size: 0.75rem; display: inline; }
+
+/* ─── DRAG CORRUPT ─── */
+.drag-corrupt { transition: color 0.05s; }
+
+/* ─── CAMERA BLOCK ─── */
+#camera-btn {
+  font-size: 0.5rem; letter-spacing: 0.25em; color: #222;
+  cursor: pointer; border: 1px solid #111; padding: 0.3rem 0.6rem;
+  display: inline-block; margin-top: 1rem; font-family: 'Space Mono', monospace;
+  transition: color 0.2s, border-color 0.2s;
+}
+#camera-btn:hover { color: var(--blue); border-color: var(--blue); }
+
+@keyframes text-glitch {
+  0%   { transform: translate(-2px,0) skewX(-1deg); }
+  33%  { transform: translate(2px,0) skewX(1deg); }
+  66%  { transform: translate(-1px,1px); }
+  100% { transform: translate(0,0); }
+}
+.dragging-corrupt { animation: text-glitch 0.1s steps(1) infinite; color: var(--pink) !important; }
+</style>
+</head>
+<body>
+
+<!--
+  ┌─────────────────────────────────────────────────────────────┐
+  │                                                               │
+  │   you found the source.                                       │
+  │                                                               │
+  │   most people don't look here.                               │
+  │   you did.                                                    │
+  │                                                               │
+  │   ◆ EASTER EGG #2: VIEW SOURCE                              │
+  │                                                               │
+  │   the signal was always in the code.                         │
+  │   welcome to the machine.                                     │
+  │                                                               │
+  │   — the sender                                               │
+  │                                                               │
+  └─────────────────────────────────────────────────────────────┘
+-->
+
+<canvas id="particle-canvas"></canvas>
+<div class="noise"></div>
+<div class="glitch-flash" id="glitch-flash"></div>
+<div class="crosshair" id="crosshair"></div>
+
+<!-- ─── HERO ─── -->
+<section id="hero">
+  <div class="hero-bg-text" aria-hidden="true">FOUND</div>
+  <div class="hero-corner">REC ●</div>
+  <p class="hero-eyebrow" id="hero-eyebrow">session_id: <span id="session-id">--</span> // ACTIVE</p>
+  <h1 class="hero-title" data-text="YOU FOUND IT" aria-label="YOU FOUND IT">
+    <span class="line1">YOU</span>
+    <span class="line2">FOUND IT.</span>
+  </h1>
+  <p class="hero-sub">
+    <span>this was not an accident.</span><br>
+    you were <span data-secret="or were you?">supposed</span> to be here.<br>
+    <span style="color:var(--dim)">or maybe you weren't.</span><br>
+    <span id="visitor-msg" style="color:var(--red)">we have been watching.</span>
+  </p>
+  <div class="eye-wrap" aria-hidden="true">
+    <div class="eye"><div class="pupil" id="eye-l"></div></div>
+    <div class="eye"><div class="pupil" id="eye-r"></div></div>
+    <span style="font-size:0.55rem;letter-spacing:0.2em;color:var(--dim);margin-left:0.5rem">TRACKING INPUT</span>
+  </div>
+  <div class="hero-coords">
+    <div class="live">● LIVE</div>
+    <div id="coord-x">X: --</div>
+    <div id="coord-y">Y: --</div>
+    <div id="timestamp">--:--:--</div>
+    <div style="margin-top:0.5rem;color:var(--red)">CONNECTION: OPEN</div>
+  </div>
+</section>
+
+<!-- ─── MARQUEE ─── -->
+<div id="marquee-wrap" aria-hidden="true">
+  <div class="marquee-track">
+    <span class="marquee-item">SIGNAL_LOST <span class="sep">◆</span></span>
+    <span class="marquee-item">YOU FOUND IT <span class="sep">◆</span></span>
+    <span class="marquee-item">DO NOT PANIC <span class="sep">◆</span></span>
+    <span class="marquee-item">0xDEAD_BEEF <span class="sep">◆</span></span>
+    <span class="marquee-item">EVERYTHING IS FINE <span class="sep">◆</span></span>
+    <span class="marquee-item">PLEASE REMAIN CALM <span class="sep">◆</span></span>
+    <span class="marquee-item">WE SEE YOU <span class="sep">◆</span></span>
+    <span class="marquee-item">SIGNAL_LOST <span class="sep">◆</span></span>
+    <span class="marquee-item">YOU FOUND IT <span class="sep">◆</span></span>
+    <span class="marquee-item">DO NOT PANIC <span class="sep">◆</span></span>
+    <span class="marquee-item">0xDEAD_BEEF <span class="sep">◆</span></span>
+    <span class="marquee-item">EVERYTHING IS FINE <span class="sep">◆</span></span>
+    <span class="marquee-item">PLEASE REMAIN CALM <span class="sep">◆</span></span>
+    <span class="marquee-item">WE SEE YOU <span class="sep">◆</span></span>
+  </div>
+</div>
+
+<!-- ─── TERMINAL ─── -->
+<section id="terminal">
+  <div class="section-rule"><span class="section-rule-text">02 // console interface</span></div>
+  <p class="terminal-label">INPUT NODE // ACTIVE SHELL</p>
+  <div class="terminal-window">
+    <div class="terminal-body" id="term-body">
+      <span class="t-line"><span class="t-prompt">root@signal_lost:~$</span> <span class="t-cmd">identify --user</span></span>
+      <span class="t-line t-out">scanning biometric signature...</span>
+      <span class="t-line t-out">cross-referencing with registry [████████░░] 83%</span>
+      <span class="t-line t-hi">  ✓ VISITOR DETECTED. ANOMALOUS CLASSIFICATION.</span>
+      <span class="t-line"> </span>
+      <span class="t-line"><span class="t-prompt">root@signal_lost:~$</span> <span class="t-cmd">cat /etc/welcome.txt</span></span>
+      <span class="t-line t-out">you were not supposed to find this.</span>
+      <span class="t-line t-out">but here you are.</span>
+      <span class="t-line t-out">the system has logged your arrival.</span>
+      <span class="t-line"> </span>
+      <span class="t-line"><span class="t-prompt">root@signal_lost:~$</span> <span class="t-cmd">ls -la /secrets/</span></span>
+      <span class="t-line t-err">ls: cannot access '/secrets/': Permission denied</span>
+      <span class="t-line t-err">ls: cannot access '/secrets/': Permission denied</span>
+      <span class="t-line t-warn">WARNING: 3 unauthorized access attempts logged.</span>
+      <span class="t-line"> </span>
+      <span class="t-line"><span class="t-prompt">root@signal_lost:~$</span> <span class="t-cmd">ping -c 1 <span class="corrupt-word" id="ping-target">██████.███</span></span></span>
+      <span class="t-line t-out">PING <span class="corrupt-word" id="ping-target-2">██████.███</span>: 56 data bytes</span>
+      <span class="t-line t-hi">64 bytes from <span id="ip-addr">---.---.---.---</span>: icmp_seq=0 ttl=<span id="ttl">--</span> time=<span id="ping-ms">--</span>ms</span>
+      <span class="t-line"> </span>
+      <span class="t-line"><span class="t-prompt">root@signal_lost:~$</span> <span class="t-cmd">_</span><span class="cursor"></span></span>
+    </div>
+    <div id="term-input-wrap">
+      <span class="term-input-prompt">root@signal_lost:~$ </span><input id="term-input" type="text" autocomplete="off" spellcheck="false" placeholder="type a command..." />
+    </div>
+    <div class="terminal-aside" aria-hidden="true">UNAUTHORIZED ACCESS POINT // DO NOT TRANSMIT</div>
+  </div>
+</section>
+
+<!-- ─── AWARE ─── -->
+<section id="aware">
+  <div class="section-rule"><span class="section-rule-text">03 // awareness protocol</span></div>
+  <h2 class="aware-headline">
+    IT <em>KNOWS</em><br>
+    <span class="stroke">YOU'RE</span><br>
+    HERE.
+  </h2>
+  <div class="aware-grid">
+    <div class="aware-block">
+      <div class="aware-block-num">00.1 // PERCEPTION</div>
+      <h3 class="aware-block-title" style="color:var(--blue)">The Site Sees</h3>
+      <p class="aware-block-body">Your cursor position is logged. Your scroll depth archived. Every hesitation annotated. The system builds a profile in real time. It doesn't need your name.</p>
+      <div class="aware-bg-num" aria-hidden="true">01</div>
+    </div>
+    <div class="aware-block">
+      <div class="aware-block-num">00.2 // MEMORY</div>
+      <h3 class="aware-block-title" style="color:var(--pink)">It Remembers</h3>
+      <p class="aware-block-body">This is not your first visit. We have evidence. The pattern of your behavior matches <span id="visit-match" style="color:var(--white)">??</span> previous sessions in the archive.</p>
+      <div class="aware-bg-num" aria-hidden="true">02</div>
+    </div>
+    <div class="aware-block">
+      <div class="aware-block-num">00.3 // INTENT</div>
+      <h3 class="aware-block-title" style="color:var(--green)">You Were Expected</h3>
+      <p class="aware-block-body">The signal was left for someone. Someone like you. The coordinates were hidden inside noise, inside static. You decoded them. Consciously or not.</p>
+      <div class="aware-bg-num" aria-hidden="true">03</div>
+    </div>
+    <div class="aware-block">
+      <div class="aware-block-num">00.4 // BEHAVIOR</div>
+      <h3 class="aware-block-title">Mouse at<br><span id="mouse-pos-block" style="color:var(--red)">---,---</span></h3>
+      <p class="aware-block-body">We know where your cursor rests when you read. We know when you hesitate. We know the exact moment you considered leaving this page.</p>
+      <div class="aware-bg-num" aria-hidden="true">04</div>
+    </div>
+    <div class="aware-block">
+      <div class="aware-block-num">00.5 // BROADCAST</div>
+      <h3 class="aware-block-title" style="color:var(--white)">Your Signal<br>Is Live</h3>
+      <p class="aware-block-body">Everything you generate here is transmitted. The destination is unknown to us. We are merely a relay. You are the content.</p>
+      <div id="camera-btn" onclick="requestCamera()">ENABLE VISUAL CONFIRMATION</div>
+      <div class="aware-bg-num" aria-hidden="true">05</div>
+    </div>
+    <div class="aware-block">
+      <div class="aware-block-num">00.6 // ???</div>
+      <h3 class="aware-block-title" style="color:var(--dim)"><span id="redacted-title" class="corrupt-word">REDACTED</span></h3>
+      <p class="aware-block-body" style="color:#2a2a2a">████████ ███ ████ ████████ ██████ ███ ████████ ████ ████ ████████ ██████ ███ ████████ ████.</p>
+      <div class="aware-bg-num" aria-hidden="true">06</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── GALLERY ─── -->
+<section id="gallery">
+  <div class="section-rule"><span class="section-rule-text">04 // recovered media</span></div>
+  <div class="gallery-header">
+    <span class="gallery-title">CORRUPTED ARCHIVE // PARTIAL RECOVERY</span>
+    <span class="gallery-count">6 OF <span style="color:var(--red)">??</span> RECOVERED</span>
+  </div>
+  <div class="gallery-grid">
+    <div class="glitch-img" data-id="IMG_00█.RAW">
+      <div class="scanline-h"></div>
+      <div class="img-stripe">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="opacity:0.15">
+          <rect x="4" y="4" width="32" height="32" stroke="#00d4ff" stroke-width="0.5"/>
+          <line x1="4" y1="4" x2="36" y2="36" stroke="#00d4ff" stroke-width="0.5"/>
+          <line x1="36" y1="4" x2="4" y2="36" stroke="#00d4ff" stroke-width="0.5"/>
+        </svg>
+        <p class="img-label">UNREADABLE // SECTOR FAULT<br><span style="color:var(--blue)">CHANNEL OFFSET +12px</span></p>
+      </div>
+    </div>
+    <div class="glitch-img" data-id="IMG_00█.RAW">
+      <div class="scanline-h"></div>
+      <div class="img-stripe">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="opacity:0.15">
+          <circle cx="20" cy="20" r="16" stroke="#ff006e" stroke-width="0.5"/>
+          <circle cx="20" cy="20" r="8" stroke="#ff006e" stroke-width="0.5"/>
+          <circle cx="20" cy="20" r="2" fill="#ff006e"/>
+        </svg>
+        <p class="img-label">FACE DETECTED // DATA LOST<br><span style="color:var(--pink)">RECONSTRUCTION FAILED</span></p>
+      </div>
+    </div>
+    <div class="glitch-img" data-id="IMG_0█3.RAW">
+      <div class="scanline-h"></div>
+      <div class="img-stripe">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="opacity:0.15">
+          <polygon points="20,4 36,36 4,36" stroke="#39ff14" stroke-width="0.5"/>
+          <line x1="20" y1="4" x2="20" y2="36" stroke="#39ff14" stroke-width="0.5"/>
+        </svg>
+        <p class="img-label">LOCATION: UNKNOWN<br><span style="color:var(--green)">GPS CORRUPTED</span></p>
+      </div>
+    </div>
+    <div class="glitch-img" data-id="IMG_0█4.RAW">
+      <div class="scanline-h"></div>
+      <div class="img-stripe">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="opacity:0.15">
+          <rect x="2" y="10" width="36" height="20" stroke="#ff2200" stroke-width="0.5"/>
+          <rect x="8" y="16" width="10" height="8" stroke="#ff2200" stroke-width="0.5"/>
+          <rect x="22" y="16" width="10" height="8" stroke="#ff2200" stroke-width="0.5"/>
+        </svg>
+        <p class="img-label">SURVEILLANCE FOOTAGE<br><span style="color:var(--red)">TIMESTAMP ERASED</span></p>
+      </div>
+    </div>
+    <div class="glitch-img" data-id="IMG_0█5.RAW">
+      <div class="scanline-h"></div>
+      <div class="img-stripe">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="opacity:0.15">
+          <line x1="4" y1="20" x2="36" y2="20" stroke="#00d4ff" stroke-width="0.5"/>
+          <line x1="20" y1="4" x2="20" y2="36" stroke="#00d4ff" stroke-width="0.5"/>
+          <circle cx="20" cy="20" r="14" stroke="#00d4ff" stroke-width="0.5"/>
+        </svg>
+        <p class="img-label">TRANSMISSION STILL<br><span style="color:var(--blue)">ORIGIN: DEEP SIGNAL</span></p>
+      </div>
+    </div>
+    <!-- TILE 6: 6 clicks = easter egg -->
+    <div class="glitch-img" id="tile-six" data-id="IMG_0██.RAW" title="DO NOT RECOVER">
+      <div class="scanline-h"></div>
+      <div class="img-stripe">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="opacity:0.15">
+          <rect x="4" y="4" width="32" height="32" stroke="#ff006e" stroke-width="0.5" rx="16"/>
+          <text x="20" y="24" text-anchor="middle" fill="#ff006e" font-size="14" font-family="monospace">?</text>
+        </svg>
+        <p class="img-label">UNCLASSIFIED // DELETED<br><span style="color:var(--pink)">DO NOT RECOVER</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── LOADING ─── -->
+<section id="loading">
+  <div class="section-rule"><span class="section-rule-text">05 // process queue</span></div>
+  <h2 class="loading-title">
+    <span class="shimmer">LOADING</span><br>SOMETHING<br><em style="font-style:italic;color:var(--dim)">important.</em>
+  </h2>
+  <div class="bars">
+    <div class="bar-row" data-secret="has been loading since 2003">
+      <div class="bar-label">
+        <span style="color:var(--blue)">DECRYPTING CORE PAYLOAD</span>
+        <span class="pct" id="bar1-pct">94%</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill bar-stuck" style="--stuck-w:94%;background:var(--blue);width:94%"></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">
+        <span style="color:var(--green)">RECONSTRUCTING SIGNAL</span>
+        <span class="pct" id="bar2-pct">67%</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill bar-stuck" style="--stuck-w:67%;background:var(--green);width:67%"></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">
+        <span style="color:var(--pink)">VERIFYING VISITOR IDENTITY</span>
+        <span class="pct" id="bar3-pct">∞</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="background:var(--pink);animation:indeterminate 2s ease-in-out infinite;width:30%"></div>
+      </div>
+    </div>
+    <div class="bar-row" id="erasing-bar-row">
+      <div class="bar-label">
+        <span style="color:var(--red)">ERASING EVIDENCE</span>
+        <span class="pct" id="bar4-pct">0%</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" id="erasing-fill" style="background:var(--red);width:0%"></div>
+      </div>
+    </div>
+  </div>
+  <div class="spinner-row">
+    <div class="spinner"></div>
+    <span class="spinner-text">PLEASE WAIT<span class="blink">_</span> PROCESS CANNOT BE TERMINATED<span class="blink">_</span></span>
+  </div>
+  <div class="loading-error">
+    ERROR 0xFFFFFF: process 'truth.exe' has exceeded memory limit<br>
+    ERROR 0x000001: unable to terminate — process is watching<br>
+    WARNING: recommended action is to <span style="color:var(--white)">CLOSE THIS WINDOW</span><br>
+    WARNING: you did not close this window
+  </div>
+  <div class="corrupt-text-block" aria-hidden="true">WAIT<br>ING<br>FOR<br>YOU</div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer id="footer">
+  <div class="section-rule"><span class="section-rule-text">06 // system status</span></div>
+  <div class="footer-sig" id="footer-sig" aria-hidden="true" title="triple-click me">SIGNAL_LOST</div>
+  <div class="footer-error-box">
+    <div class="error-body">
+      <span>A <span class="highlight">fatal exception</span> has occurred at <span class="err-code">0xCAFE:DEAD</span>.<br></span>
+      <span>The current session will be <span class="warn">terminated and archived</span>.<br></span>
+      <span>Your visit has been logged under reference <span class="highlight" id="log-ref">--</span>.<br><br></span>
+      <span>* The signal was <span class="ok">successfully received</span>.<br></span>
+      <span>* The message was <span class="warn">partially decoded</span>.<br></span>
+      <span>* The sender is <span class="err-code">UNKNOWN</span>.<br></span>
+      <span>* The recipient is <span class="ok">confirmed</span>. It was always <span class="highlight">you</span>.<br><br></span>
+      <span style="color:#444">Press any key to continue.<br>No key press will be acknowledged.<br>This message will not repeat.</span>
+    </div>
+    <div class="error-dump" id="hex-dump">
+      0000: 59 4F 55 20 46 4F 55 4E 44 20 49 54 20 57 41 53 &nbsp;YOU FOUND IT WAS<br>
+      0010: 20 41 4C 57 41 59 53 20 48 45 52 45 20 20 20 20 &nbsp;&nbsp;ALWAYS HERE<br>
+      0020: 44 4F 20 4E 4F 54 20 4C 45 41 56 45 20 20 20 20 &nbsp;DO NOT LEAVE<br>
+      0030: 57 45 20 57 49 4C 4C 20 4D 49 53 53 20 59 4F 55 &nbsp;WE WILL MISS YOU
+    </div>
+    <!-- EASTER EGG #6: select this text to reveal it -->
+    <div style="color:#060608;user-select:text;font-size:0.55rem;letter-spacing:0.08em;line-height:1.8;margin-top:0.75rem;" aria-hidden="true">EASTER EGG SIX FOUND: you selected the invisible text. the signal was in the margins the whole time. well done, operator.</div>
+  </div>
+  <div class="footer-bottom">
+    <span>SIGNAL_LOST // ALL RIGHTS IMAGINED // <span id="year">2026</span></span>
+    <span>SESSION CLOSED // <span id="session-end">--</span></span>
+  </div>
+  <!-- Screen reader easter egg -->
+  <p class="sr-only" aria-label="Hidden message for screen reader users">Easter egg seven: if you can hear this, you found the signal through a different kind of listening. The transmission was always meant for everyone who pays attention. Welcome, and thank you for being here.</p>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- NEW OVERLAYS                                               -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<!-- SECRET ROOM (Konami code / signal() console / context menu) -->
+<div id="secret-room">
+  <canvas id="sr-wave"></canvas>
+  <div id="sr-scanlines"></div>
+  <div id="sr-inner">
+    <div id="sr-freq" class="sr-fade" style="color:var(--green);font-size:0.55rem;letter-spacing:0.5em;margin-bottom:3rem;font-family:'Space Mono',monospace;">TRANSMISSION RECEIVED // FREQUENCY: 88.6 MHz [CORRUPTED]</div>
+    <h2 id="sr-title" class="sr-fade" style="font-family:'Playfair Display',serif;font-size:clamp(2.5rem,6vw,5rem);font-weight:900;font-style:italic;color:#fff;margin-bottom:2rem;line-height:0.9;text-align:center;">YOU<br>DECODED<br><span style="color:var(--blue)">THE SIGNAL</span></h2>
+    <div id="sr-divider" class="sr-fade" style="width:60px;height:1px;background:var(--blue);margin:2rem auto;"></div>
+    <div id="sr-msg" class="sr-fade" style="font-size:0.65rem;line-height:2.2;color:#666;max-width:500px;text-align:left;font-family:'Space Mono',monospace;"></div>
+    <div id="sr-close" class="sr-fade" style="margin-top:3rem;font-size:0.5rem;letter-spacing:0.35em;color:#2a2a2a;cursor:pointer;font-family:'Space Mono',monospace;" onclick="closeSecretRoom()">[ PRESS ESC OR CLICK TO RETURN. OR DON'T. ]</div>
+  </div>
+</div>
+
+<!-- FAKE CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-header">SIGNAL_LOST // CONTEXT INTERFACE v0.0.1</div>
+  <div class="ctx-item"><span>Inspect Reality</span><span class="ctx-tag">[BLOCKED]</span></div>
+  <div class="ctx-item"><span>Save Page As...</span><span class="ctx-tag">[INTERCEPTED]</span></div>
+  <div class="ctx-item"><span>View Page Source</span><span class="ctx-tag">[REDACTED]</span></div>
+  <div class="ctx-item"><span>Copy</span><span class="ctx-tag">[WHAT ARE YOU COPYING]</span></div>
+  <div class="ctx-item"><span>Open in New Tab</span><span class="ctx-tag">[ESCAPE ATTEMPT LOGGED]</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item ctx-ok" onclick="openSecretRoom();closeCtxMenu()"><span>Accept Your Fate</span><span class="ctx-tag">[ENTER THE SIGNAL]</span></div>
+  <div class="ctx-item ctx-danger" onclick="closeCtxMenu()"><span>Ignore This Warning</span><span class="ctx-tag">[DANGEROUS]</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" style="cursor:default;pointer-events:none;"><span style="color:#1a1a1a;font-size:0.5rem;">this.context.menu.is.fake = true;</span></div>
+</div>
+
+<!-- CONNECTION DROPPED -->
+<div id="conn-drop">
+  <div style="color:var(--red);font-size:0.55rem;letter-spacing:0.5em;margin-bottom:2rem;">⚠ CONNECTION INTERRUPTED</div>
+  <div style="font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,4rem);font-weight:900;font-style:italic;color:var(--white);margin-bottom:3rem;line-height:0.9;">SIGNAL<br>LOST</div>
+  <div style="font-size:0.6rem;letter-spacing:0.25em;color:#3a3a3a;margin-bottom:2rem;">ATTEMPTING TO RECONNECT<span id="conn-dots">.</span></div>
+  <div style="width:240px;height:2px;background:#111;position:relative;overflow:hidden;margin-bottom:3rem;">
+    <div id="conn-bar" style="height:100%;background:var(--red);width:0%;animation:conn-progress 3.2s ease-in-out forwards;"></div>
+  </div>
+  <div style="font-size:0.5rem;letter-spacing:0.2em;color:#1a1a1a;">DO NOT REFRESH // DO NOT PANIC // WE WILL FIND YOU AGAIN</div>
+</div>
+
+<!-- SIGNAL TYPED OVERLAY -->
+<div id="signal-overlay">
+  <div style="font-family:'Playfair Display',serif;font-size:clamp(2rem,8vw,6rem);font-weight:900;font-style:italic;color:var(--green);text-align:center;line-height:0.9;text-shadow:0 0 60px rgba(57,255,20,0.4);">SIGNAL<br>CONFIRMED.</div>
+</div>
+
+<!-- GALLERY SECRET (tile 6, 6 clicks) -->
+<div id="gallery-secret">
+  <div style="color:var(--green);font-size:0.5rem;letter-spacing:0.5em;margin-bottom:3rem;">◆ EASTER EGG #4 // COORDINATES RECOVERED</div>
+  <div style="font-family:'Playfair Display',serif;font-size:clamp(1.5rem,4vw,3.5rem);font-weight:900;font-style:italic;color:var(--white);margin-bottom:2rem;line-height:1;">WARDENCLYFFE<br><span style="color:var(--blue)">TOWER</span></div>
+  <div style="font-size:0.6rem;letter-spacing:0.2em;color:#3a3a3a;line-height:2.5;margin-bottom:2rem;">
+    LAT: 40.8448° N<br>
+    LON: 73.9394° W<br>
+    DEMOLISHED: 1917<br>
+    SIGNAL STATUS: <span style="color:var(--pink)">STILL BROADCASTING</span>
+  </div>
+  <div style="font-size:0.6rem;letter-spacing:0.12em;color:#555;max-width:360px;line-height:2.2;margin-bottom:3rem;">
+    Tesla's original transmission station.<br>
+    The first signal ever sent.<br>
+    The source of all noise.<br>
+    <span style="color:#2a2a2a;">you found the origin.</span>
+  </div>
+  <div style="font-size:0.5rem;letter-spacing:0.3em;color:#2a2a2a;cursor:pointer;" onclick="document.getElementById('gallery-secret').style.display='none'">[ COORDINATES SAVED // CLOSE ]</div>
+</div>
+
+<!-- EXIT INTENT -->
+<div id="exit-intent">
+  <div style="color:var(--red);font-size:0.5rem;letter-spacing:0.5em;margin-bottom:3rem;">⚠ DEPARTURE ATTEMPT DETECTED</div>
+  <div style="font-family:'Playfair Display',serif;font-size:clamp(2rem,6vw,5rem);font-weight:900;font-style:italic;color:var(--white);margin-bottom:3rem;line-height:0.9;">WAIT.<br><span style="color:var(--pink)">DON'T<br>GO.</span></div>
+  <div style="font-size:0.62rem;letter-spacing:0.12em;color:#3a3a3a;line-height:2.5;margin-bottom:4rem;">
+    you haven't found everything yet.<br>
+    the signal isn't finished with you.<br>
+    <span style="color:#1a1a1a;">neither are we.</span>
+  </div>
+  <div style="display:flex;gap:3rem;flex-wrap:wrap;justify-content:center;">
+    <div style="font-size:0.55rem;letter-spacing:0.3em;color:var(--green);cursor:pointer;border:1px solid var(--green);padding:0.75rem 1.5rem;" onclick="dismissExitIntent()">STAY // CONTINUE EXPLORING</div>
+    <div style="font-size:0.55rem;letter-spacing:0.3em;color:#333;cursor:pointer;border:1px solid #1a1a1a;padding:0.75rem 1.5rem;" onclick="dismissExitIntent()">LEAVE // (we'll still be here)</div>
+  </div>
+  <div style="margin-top:3rem;font-size:0.48rem;letter-spacing:0.2em;color:#1a1a1a;">your cursor moved toward the exit. we noticed. we always notice.</div>
+</div>
+
+<!-- IDLE MESSAGE -->
+<div id="idle-msg"></div>
+
+<!-- TWEAKS PANEL (Claude Design edit mode) -->
+<div id="tweaks-panel"></div>
+
+<!-- BOOT SCREEN -->
+<div id="boot-screen">
+  <div id="boot-lines"></div>
+  <div id="boot-bsod">
+    <div style="font-size:clamp(1rem,3vw,2rem);font-weight:700;margin-bottom:2rem;">A problem has been detected and SIGNAL_LOST has been shut down to prevent damage to your perception of reality.</div>
+    <div style="font-size:0.65rem;line-height:2.2;color:#000a;">
+      VISITOR_NOT_SUPPOSED_TO_BE_HERE<br><br>
+      If this is the first time you've seen this signal:<br>
+      Restart your browser. It won't help.<br><br>
+      Technical information:<br>
+      *** STOP: 0x000DEAD0 (0xCAFEBABE, 0xDEADBEEF, 0xFF06E000)<br>
+      *** reality.exe — Address 0xDEAD IRQL_NOT_LESS_OR_EQUAL<br><br>
+      Dumping signal to memory: <span id="bsod-pct">0</span>%
+    </div>
+  </div>
+  <div id="boot-skip">[ CLICK TO SKIP ]</div>
+</div>
+
+<!-- AUDIO TOGGLE -->
+<button id="audio-toggle" title="toggle ambient signal">◉ AUDIO OFF</button>
+
+<!-- EGG TRACKER -->
+<div id="egg-tracker" title="signals found">◆ <span id="egg-count">0</span>/7</div>
+
+<!-- FINAL UNLOCK -->
+<div id="final-unlock">
+  <div style="color:var(--green);font-size:0.5rem;letter-spacing:0.6em;margin-bottom:3rem;animation:gold-pulse 2s ease-in-out infinite;">◆ ALL 7 SIGNALS FOUND ◆</div>
+  <div style="font-family:'Playfair Display',serif;font-size:clamp(2.5rem,7vw,6rem);font-weight:900;font-style:italic;color:#fff;line-height:0.9;margin-bottom:3rem;">TRANSMISSION<br><span style="color:var(--green)">COMPLETE.</span></div>
+  <div style="font-size:0.62rem;letter-spacing:0.15em;color:#3a3a3a;line-height:2.5;margin-bottom:3rem;max-width:480px;">
+    you found everything.<br>
+    every signal. every fragment. every hidden thing.<br>
+    <span style="color:#555;">we built this not knowing who would find it.</span><br>
+    <span style="color:#444;">now we know.</span><br>
+    <span style="color:#333;">it was always going to be you.</span>
+  </div>
+  <div id="download-signal-btn" style="font-size:0.55rem;letter-spacing:0.3em;color:var(--green);cursor:pointer;border:1px solid var(--green);padding:0.75rem 1.5rem;margin-bottom:4rem;" onclick="downloadSignal()">◆ DOWNLOAD THE SIGNAL</div>
+  <div style="font-size:0.48rem;letter-spacing:0.3em;color:#1a1a1a;cursor:pointer;" onclick="document.getElementById('final-unlock').style.display='none'">[ RETURN TO SIGNAL ]</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- ORIGINAL SCRIPT (preserved from Claude Design)            -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script>
+const $ = id => document.getElementById(id);
+
+const sid = Math.random().toString(36).slice(2,10).toUpperCase();
+$('session-id').textContent = sid;
+$('log-ref').textContent = 'SL-' + sid;
+$('year').textContent = new Date().getFullYear();
+$('ttl').textContent = Math.floor(Math.random()*64)+1;
+$('ping-ms').textContent = (Math.random()*200+20).toFixed(3);
+$('ip-addr').textContent = Array.from({length:4},()=>Math.floor(Math.random()*256)).join('.');
+
+function clock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  $('timestamp').textContent = h+':'+m+':'+s;
+  $('session-end').textContent = h+':'+m+':'+s;
+}
+clock(); setInterval(clock,1000);
+
+let mx = 0, my = 0;
+const crosshair = $('crosshair');
+const eyeL = $('eye-l');
+const eyeR = $('eye-r');
+const mouseBlock = $('mouse-pos-block');
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  crosshair.style.left = mx+'px';
+  crosshair.style.top  = my+'px';
+  $('coord-x').textContent = 'X: '+mx;
+  $('coord-y').textContent = 'Y: '+my;
+  mouseBlock.textContent = mx+', '+my;
+  const eyeContainer = document.querySelector('.eye-wrap');
+  if (eyeContainer) {
+    const rect = eyeContainer.getBoundingClientRect();
+    const cx = rect.left+rect.width/2, cy = rect.top+rect.height/2;
+    const dx = mx-cx, dy = my-cy;
+    const angle = Math.atan2(dy,dx);
+    const dist = Math.min(4,Math.hypot(dx,dy)*0.05);
+    const ox = Math.cos(angle)*dist, oy = Math.sin(angle)*dist;
+    eyeL.style.transform = `translate(calc(-50% + ${ox}px),calc(-50% + ${oy}px))`;
+    eyeR.style.transform = `translate(calc(-50% + ${ox}px),calc(-50% + ${oy}px))`;
+  }
+});
+
+const flash = $('glitch-flash');
+function triggerFlash() {
+  const colors = ['#00d4ff','#ff006e','#39ff14','#ff2200'];
+  flash.style.background = colors[Math.floor(Math.random()*colors.length)];
+  flash.style.opacity = (Math.random()*0.12+0.04).toString();
+  setTimeout(()=>flash.style.opacity='0', 80+Math.random()*120);
+  setTimeout(triggerFlash, 3000+Math.random()*9000);
+}
+setTimeout(triggerFlash, 2000);
+
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*░▒▓█▄▀■□▪';
+const corruptEls = document.querySelectorAll('.corrupt-word');
+function corrupt(el,original) {
+  let frame=0; const maxFrames=8;
+  const interval = setInterval(()=>{
+    const len=original.length;
+    el.textContent = Array.from({length:len},(_,i)=>{
+      if(frame>maxFrames*0.6 && i<frame/maxFrames*len) return original[i];
+      return CHARS[Math.floor(Math.random()*CHARS.length)];
+    }).join('');
+    frame++;
+    if(frame>maxFrames){el.textContent=original;clearInterval(interval);}
+  },60);
+}
+const pingTargets = ['NOWHERE.NULL','DEEP.SPACE.SIG','ORIGIN.UNKNOWN','NULL.NULL.NULL'];
+let ptIdx=0;
+function corruptAll() {
+  corruptEls.forEach(el=>{
+    const originals={'ping-target':pingTargets[ptIdx%pingTargets.length],'ping-target-2':pingTargets[ptIdx%pingTargets.length],'redacted-title':'CLASSIFIED'};
+    corrupt(el, originals[el.id]||el.textContent);
+  });
+  ptIdx++;
+  setTimeout(corruptAll, 4000+Math.random()*6000);
+}
+setTimeout(corruptAll,1500);
+
+const msgs = [
+  'we have been watching.',
+  'you stayed longer than expected.',
+  'your session is being recorded.',
+  'do not look away from the screen.',
+  'we know what you searched before this.',
+  'the signal is getting stronger.',
+  'your hesitation has been noted.',
+  'we have seen everything.',
+];
+let msgIdx=0;
+function rotateMsg() {
+  const el=$('visitor-msg');
+  if(!el)return;
+  el.style.opacity='0';
+  setTimeout(()=>{ msgIdx=(msgIdx+1)%msgs.length; el.textContent=msgs[msgIdx]; el.style.transition='opacity 0.5s'; el.style.opacity='1'; },400);
+  setTimeout(rotateMsg, 4000+Math.random()*3000);
+}
+setTimeout(rotateMsg,3000);
+
+const termBody=$('term-body');
+const liveLines=[
+  ['root@signal_lost:~$ ','du -sh /usr/share/secrets/','dim',''],
+  ['','','hi','48.3G\t/usr/share/secrets/'],
+  ['root@signal_lost:~$ ','whoami','dim',''],
+  ['','','warn','root // identity: UNCERTAIN'],
+  ['root@signal_lost:~$ ','exit','dim',''],
+  ['','','err','logout: cannot terminate watched session'],
+];
+let llIdx=0;
+function addTermLine() {
+  if(llIdx>=liveLines.length)return;
+  const [prompt,cmd,outType,out]=liveLines[llIdx];
+  const span=document.createElement('span');
+  span.className='t-line';
+  if(prompt) span.innerHTML=`<span class="t-prompt">${prompt}</span><span class="t-cmd">${cmd}</span>`;
+  else if(out) span.innerHTML=`<span class="t-${outType}">${out}</span>`;
+  termBody.insertBefore(span,termBody.lastElementChild);
+  llIdx++;
+  setTimeout(addTermLine,1200+Math.random()*1600);
+}
+setTimeout(addTermLine,5000);
+
+document.querySelectorAll('.glitch-img').forEach(img=>{
+  img.addEventListener('mouseenter',()=>{
+    img.style.transform=`translate(${(Math.random()-.5)*4}px,${(Math.random()-.5)*4}px)`;
+    img.style.filter=`hue-rotate(${Math.random()*360}deg) brightness(${0.8+Math.random()*0.5})`;
+    setTimeout(()=>{img.style.transform='';img.style.filter='';},150);
+  });
+});
+
+function jitterBars() {
+  const b1=94+(Math.random()>0.8?-Math.random()*3:0);
+  $('bar1-pct').textContent=b1.toFixed(0)+'%';
+  const b2=67+(Math.random()>0.7?Math.random()*2-1:0);
+  $('bar2-pct').textContent=Math.min(99.9,b2).toFixed(1)+'%';
+  setTimeout(jitterBars,2000+Math.random()*3000);
+}
+setTimeout(jitterBars,2000);
+
+// Tweaks panel (Claude Design edit mode compatibility)
+const TWEAK_DEFAULTS={accentColor:"#00d4ff",glitchIntensity:"chaos",cursorStyle:"crosshair",scanlines:true};
+let tweakState={...TWEAK_DEFAULTS};
+try { const saved=localStorage.getItem('signal_lost_tweaks'); if(saved)tweakState={...tweakState,...JSON.parse(saved)}; } catch(e){}
+const panel=$('tweaks-panel');
+panel.style.cssText='position:fixed;bottom:2rem;right:2rem;background:#0a0a0c;border:1px solid #333;padding:1.5rem;z-index:10000;font-family:\'Space Mono\',monospace;font-size:0.6rem;letter-spacing:0.15em;min-width:260px;display:none;box-shadow:4px 4px 0 0 var(--blue);';
+panel.innerHTML=`<div style="color:var(--green);margin-bottom:1.2rem;letter-spacing:0.3em;font-size:0.55rem">◆ TWEAKS // CONTROL PANEL</div><div style="margin-bottom:1rem"><div style="color:var(--dim);margin-bottom:0.5rem">ACCENT COLOR</div><div style="display:flex;gap:0.5rem">${['#00d4ff','#39ff14','#ff006e','#ff2200'].map(c=>`<div class="tw-color" data-color="${c}" style="width:24px;height:24px;background:${c};cursor:pointer;border:1px solid transparent"></div>`).join('')}</div></div><div style="margin-bottom:1rem"><div style="color:var(--dim);margin-bottom:0.5rem">GLITCH INTENSITY</div><div style="display:flex;gap:0.5rem;flex-wrap:wrap">${['subtle','normal','chaos'].map(v=>`<button class="tw-btn" data-key="glitchIntensity" data-val="${v}" style="padding:0.3rem 0.6rem;background:transparent;border:1px solid #333;color:var(--dim);font-family:inherit;font-size:0.55rem;letter-spacing:0.15em;cursor:pointer">${v.toUpperCase()}</button>`).join('')}</div></div><div><div style="color:var(--dim);margin-bottom:0.5rem">SCANLINES</div><button id="tw-scan" style="padding:0.3rem 0.6rem;background:transparent;border:1px solid #333;color:var(--dim);font-family:inherit;font-size:0.55rem;letter-spacing:0.15em;cursor:pointer">ON</button></div>`;
+function applyTweaks(){document.documentElement.style.setProperty('--blue',tweakState.accentColor);panel.querySelectorAll('.tw-btn').forEach(b=>{b.style.borderColor=(b.dataset.val===tweakState[b.dataset.key])?tweakState.accentColor:'#333';b.style.color=(b.dataset.val===tweakState[b.dataset.key])?tweakState.accentColor:'';});panel.querySelectorAll('.tw-color').forEach(c=>{c.style.borderColor=c.dataset.color===tweakState.accentColor?'#fff':'transparent';});const scanBtn=document.getElementById('tw-scan');if(scanBtn)scanBtn.textContent=tweakState.scanlines?'ON':'OFF';}
+panel.querySelectorAll('.tw-color').forEach(el=>{el.addEventListener('click',()=>{tweakState.accentColor=el.dataset.color;applyTweaks();window.parent.postMessage({type:'__edit_mode_set_keys',edits:tweakState},'*');});});
+panel.querySelectorAll('.tw-btn').forEach(el=>{el.addEventListener('click',()=>{tweakState[el.dataset.key]=el.dataset.val;applyTweaks();window.parent.postMessage({type:'__edit_mode_set_keys',edits:tweakState},'*');});});
+document.getElementById('tw-scan')?.addEventListener('click',()=>{tweakState.scanlines=!tweakState.scanlines;applyTweaks();window.parent.postMessage({type:'__edit_mode_set_keys',edits:tweakState},'*');});
+applyTweaks();
+window.addEventListener('message',e=>{if(e.data?.type==='__activate_edit_mode'){panel.style.display='block';}if(e.data?.type==='__deactivate_edit_mode'){panel.style.display='none';}});
+window.parent.postMessage({type:'__edit_mode_available'},'*');
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- EASTER EGG ENGINE                                         -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+'use strict';
+
+// ─── VISIT COUNTER ────────────────────────────────────────────
+const visitCount = (parseInt(localStorage.getItem('sl_visits') || '0')) + 1;
+localStorage.setItem('sl_visits', visitCount);
+
+const visitMatchEl = document.getElementById('visit-match');
+if (visitMatchEl) {
+  if (visitCount === 1) {
+    visitMatchEl.textContent = 'zero (but we expected you)';
+    visitMatchEl.style.color = 'var(--green)';
+  } else {
+    visitMatchEl.textContent = visitCount - 1;
+  }
+}
+
+if (visitCount > 1) {
+  const vm = document.getElementById('visitor-msg');
+  if (vm) {
+    const returnMsgs = [
+      `visit #${visitCount}. you keep coming back.`,
+      `you've been here ${visitCount} times. we've kept count.`,
+      `again. you came back again. we're not surprised.`,
+      `${visitCount} visits. at some point this becomes a relationship.`,
+    ];
+    vm.textContent = returnMsgs[Math.min(visitCount - 2, returnMsgs.length - 1)];
+  }
+}
+
+// ─── 3AM MODE ─────────────────────────────────────────────────
+const hour = new Date().getHours();
+if (hour >= 3 && hour < 5) {
+  document.body.classList.add('mode-3am');
+  const eyebrow = document.getElementById('hero-eyebrow');
+  if (eyebrow) {
+    const mins = String(new Date().getMinutes()).padStart(2,'0');
+    eyebrow.innerHTML = `3:${mins} AM // <span style="color:var(--red)">YOU SHOULDN'T BE HERE</span>`;
+  }
+  const vm = document.getElementById('visitor-msg');
+  if (vm) vm.textContent = "it's 3am. we've been waiting for someone like you.";
+}
+
+// ─── PARTICLE CANVAS ──────────────────────────────────────────
+const pCanvas = document.getElementById('particle-canvas');
+const pCtx = pCanvas.getContext('2d');
+
+function resizeCanvas() {
+  pCanvas.width = window.innerWidth;
+  pCanvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const PCOLORS = ['#00d4ff','#39ff14','#ff006e','#ff2200'];
+class Particle {
+  constructor() { this.reset(true); }
+  reset(init) {
+    this.x = Math.random() * pCanvas.width;
+    this.y = init ? Math.random() * pCanvas.height : (Math.random() > 0.5 ? -5 : pCanvas.height + 5);
+    this.vx = (Math.random() - 0.5) * 0.4;
+    this.vy = (Math.random() - 0.5) * 0.4;
+    this.size = Math.random() * 1.5 + 0.3;
+    this.baseOpacity = Math.random() * 0.35 + 0.05;
+    this.opacity = this.baseOpacity;
+    this.color = PCOLORS[Math.floor(Math.random() * PCOLORS.length)];
+    this.life = Math.random() * 400 + 200;
+    this.age = init ? Math.floor(Math.random() * 400) : 0;
+  }
+  update(mx, my) {
+    const dx = this.x - mx, dy = this.y - my;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 120 && dist > 0) {
+      this.vx += (dx / dist) * 0.6;
+      this.vy += (dy / dist) * 0.6;
+    }
+    this.vx *= 0.97; this.vy *= 0.97;
+    this.x += this.vx; this.y += this.vy;
+    this.age++;
+    if (this.x < -10) this.x = pCanvas.width + 10;
+    if (this.x > pCanvas.width + 10) this.x = -10;
+    if (this.y < -10) this.y = pCanvas.height + 10;
+    if (this.y > pCanvas.height + 10) this.y = -10;
+    if (this.age > this.life) this.reset(false);
+    const fadeIn = Math.min(1, this.age / 40);
+    const fadeOut = Math.min(1, (this.life - this.age) / 40);
+    this.opacity = this.baseOpacity * fadeIn * fadeOut;
+  }
+  draw() {
+    pCtx.globalAlpha = this.opacity;
+    pCtx.fillStyle = this.color;
+    pCtx.beginPath();
+    pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    pCtx.fill();
+  }
+}
+
+const particles = Array.from({ length: 100 }, () => new Particle());
+
+let pmx = window.innerWidth / 2, pmy = window.innerHeight / 2;
+document.addEventListener('mousemove', e => { pmx = e.clientX; pmy = e.clientY; });
+
+function animateParticles() {
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  pCtx.globalAlpha = 1;
+  particles.forEach(p => { p.update(pmx, pmy); p.draw(); });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ─── CURSOR TRAIL ─────────────────────────────────────────────
+const TRAIL = 24;
+const trailDots = [];
+for (let i = 0; i < TRAIL; i++) {
+  const dot = document.createElement('div');
+  dot.className = 'trail-dot';
+  const size = Math.max(2, (1 - i / TRAIL) * 9);
+  dot.style.cssText = `width:${size}px;height:${size}px;background:${PCOLORS[i % PCOLORS.length]};opacity:${(1 - i / TRAIL) * 0.5};`;
+  document.body.appendChild(dot);
+  trailDots.push({ el: dot, x: pmx, y: pmy });
+}
+
+function animateTrail() {
+  let px = pmx, py = pmy;
+  trailDots.forEach((t, i) => {
+    const lag = 0.35 - i * 0.009;
+    t.x += (px - t.x) * lag;
+    t.y += (py - t.y) * lag;
+    t.el.style.left = t.x + 'px';
+    t.el.style.top  = t.y + 'px';
+    px = t.x; py = t.y;
+  });
+  requestAnimationFrame(animateTrail);
+}
+animateTrail();
+
+// ─── RIGHT-CLICK CONTEXT MENU ─────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+document.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  let x = e.clientX, y = e.clientY;
+  if (x + 320 > window.innerWidth) x = window.innerWidth - 330;
+  if (y + 300 > window.innerHeight) y = window.innerHeight - 310;
+  ctxMenu.style.left = x + 'px';
+  ctxMenu.style.top  = y + 'px';
+  ctxMenu.style.display = 'block';
+  setTimeout(() => document.addEventListener('click', closeCtxMenu, { once: true }), 10);
+});
+
+window.closeCtxMenu = function() { ctxMenu.style.display = 'none'; };
+
+// ─── SECRET ROOM ──────────────────────────────────────────────
+const SR_LINES = [
+  { text: '> DECRYPTING PAYLOAD...',                    color: '#39ff14' },
+  { text: '> SIGNATURE VERIFIED.',                      color: '#39ff14' },
+  { text: '> ORIGIN: [CLASSIFIED]',                     color: '#39ff14' },
+  { text: '> RECIPIENT: CONFIRMED.',                    color: '#39ff14' },
+  { text: '────────────────────────────────────────',  color: '#1a1a1a' },
+  { text: '',                                            color: '#666' },
+  { text: 'We built this for exactly one person.',      color: '#666' },
+  { text: "We didn't know who.",                        color: '#666' },
+  { text: '',                                            color: '#666' },
+  { text: 'We left the signal in the static.',          color: '#666' },
+  { text: 'In the noise. Between the frequencies.',    color: '#666' },
+  { text: 'In the space where people stop paying attention.', color: '#555' },
+  { text: '',                                            color: '#666' },
+  { text: 'Most people scroll past it.',               color: '#666' },
+  { text: "You didn't.",                               color: 'var(--white)' },
+  { text: '',                                            color: '#666' },
+  { text: 'The coordinates you followed led here.',    color: '#666' },
+  { text: 'They always led here.',                     color: '#666' },
+  { text: 'There was never anywhere else to go.',      color: '#555' },
+  { text: '',                                            color: '#666' },
+  { text: `You are visitor [${visitCount}].`,          color: '#666' },
+  { text: 'You are the only visitor that matters.',    color: 'var(--white)' },
+  { text: '',                                            color: '#666' },
+  { text: 'The signal is yours now.',                  color: '#666' },
+  { text: 'Do with it what you will.',                 color: '#666' },
+  { text: '',                                            color: '#666' },
+  { text: '────────────────────────────────────────',  color: '#1a1a1a' },
+  { text: '— the sender',                               color: '#333' },
+  { text: '  (who is no longer here)',                  color: '#2a2a2a' },
+  { text: '  (but left this for you anyway)',           color: '#2a2a2a' },
+  { text: '  (and is glad you came)',                   color: '#222' },
+  { text: '────────────────────────────────────────',  color: '#1a1a1a' },
+  { text: '',                                            color: '#666' },
+  { text: '> END TRANSMISSION',                         color: '#39ff14' },
+  { text: '> THIS FREQUENCY WILL NOT BROADCAST AGAIN', color: '#39ff14' },
+];
+
+let waveRAF = null;
+
+window.openSecretRoom = function() {
+  const room = document.getElementById('secret-room');
+  room.style.display = 'block';
+  room.scrollTop = 0;
+
+  ['sr-freq','sr-title','sr-divider','sr-msg','sr-close'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity = '0'; el.style.transition = 'opacity 0.8s'; }
+  });
+  const srMsg = document.getElementById('sr-msg');
+  if (srMsg) srMsg.innerHTML = '';
+
+  setTimeout(() => { const el = document.getElementById('sr-freq'); if (el) el.style.opacity = '1'; }, 400);
+  setTimeout(() => { const el = document.getElementById('sr-title'); if (el) el.style.opacity = '1'; }, 1100);
+  setTimeout(() => { const el = document.getElementById('sr-divider'); if (el) el.style.opacity = '1'; }, 1700);
+  setTimeout(() => { const el = document.getElementById('sr-msg'); if (el) el.style.opacity = '1'; typeLines(0); }, 2200);
+
+  drawWave();
+
+  document.addEventListener('keydown', function escHandler(e) {
+    if (e.key === 'Escape') { window.closeSecretRoom(); document.removeEventListener('keydown', escHandler); }
+  });
+};
+
+function typeLines(idx) {
+  if (idx >= SR_LINES.length) {
+    setTimeout(() => { const el = document.getElementById('sr-close'); if (el) el.style.opacity = '1'; }, 500);
+    return;
+  }
+  const msgEl = document.getElementById('sr-msg');
+  if (!msgEl) return;
+  const { text, color } = SR_LINES[idx];
+  const lineEl = document.createElement('div');
+  lineEl.style.color = color;
+  if (!text) { lineEl.innerHTML = '&nbsp;'; msgEl.appendChild(lineEl); setTimeout(() => typeLines(idx + 1), 80); return; }
+  msgEl.appendChild(lineEl);
+  let i = 0;
+  const type = () => {
+    lineEl.textContent = text.slice(0, i);
+    i++;
+    if (i <= text.length) { setTimeout(type, 18 + Math.random() * 12); }
+    else { setTimeout(() => typeLines(idx + 1), text.startsWith('>') ? 120 : 40); }
+  };
+  type();
+}
+
+window.closeSecretRoom = function() {
+  const room = document.getElementById('secret-room');
+  room.style.transition = 'opacity 0.5s';
+  room.style.opacity = '0';
+  setTimeout(() => {
+    room.style.display = 'none';
+    room.style.opacity = '';
+    room.style.transition = '';
+    if (waveRAF) { cancelAnimationFrame(waveRAF); waveRAF = null; }
+  }, 500);
+};
+
+function drawWave() {
+  const canvas = document.getElementById('sr-wave');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = 100;
+  let t = 0;
+  const layers = [
+    { color: '#00d4ff', amp: 22, fq: 0.014, speed: 1.0, alpha: 0.35 },
+    { color: '#39ff14', amp: 14, fq: 0.024, speed: 1.4, alpha: 0.18 },
+    { color: '#ff006e', amp: 9,  fq: 0.038, speed: 1.1, alpha: 0.12 },
+  ];
+  function frame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    layers.forEach(w => {
+      ctx.strokeStyle = w.color;
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = w.alpha;
+      ctx.beginPath();
+      for (let x = 0; x <= canvas.width; x += 2) {
+        const y = 50 + Math.sin(x * w.fq + t * w.speed * 1.5) * w.amp
+                     + Math.sin(x * w.fq * 2.1 + t * 2.2) * (w.amp * 0.35);
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    });
+    t += 0.025;
+    waveRAF = requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// ─── KONAMI CODE ──────────────────────────────────────────────
+const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konamiIdx = 0;
+document.addEventListener('keydown', e => {
+  if (e.key === KONAMI[konamiIdx]) {
+    konamiIdx++;
+    if (konamiIdx === KONAMI.length) {
+      konamiIdx = 0;
+      window.openSecretRoom();
+      window.registerEgg?.('konami');
+      console.log('%c[EASTER EGG #3: KONAMI CODE]', 'color:#39ff14;font-family:monospace;font-size:14px;font-weight:bold;');
+    }
+  } else { konamiIdx = 0; }
+});
+
+// ─── TYPE "SIGNAL" ANYWHERE ───────────────────────────────────
+let typeBuf = '';
+document.addEventListener('keydown', e => {
+  if (e.key.length === 1) {
+    typeBuf = (typeBuf + e.key.toLowerCase()).slice(-10);
+    if (typeBuf.includes('signal')) {
+      typeBuf = '';
+      triggerSignalConfirm();
+    }
+  }
+});
+
+function triggerSignalConfirm() {
+  const overlay = document.getElementById('signal-overlay');
+  overlay.style.opacity = '1';
+  const glitchFlash = document.getElementById('glitch-flash');
+  glitchFlash.style.background = '#39ff14';
+  glitchFlash.style.opacity = '0.2';
+  setTimeout(() => { glitchFlash.style.opacity = '0'; }, 180);
+  [
+    [80,  'translate(4px,0)'],
+    [160, 'translate(-3px,2px)'],
+    [240, 'translate(2px,-2px)'],
+    [320, ''],
+  ].forEach(([ms, t]) => setTimeout(() => document.body.style.transform = t, ms));
+  setTimeout(() => { overlay.style.opacity = '0'; }, 1800);
+  window.registerEgg?.('signal');
+  console.log('%c[EASTER EGG #5: SIGNAL TYPED]', 'color:#39ff14;font-family:monospace;font-size:14px;font-weight:bold;');
+  console.log('%cYou typed the signal. You are one of us.', 'color:#666;font-family:monospace;');
+}
+
+// ─── GALLERY TILE 6: 6 CLICKS ─────────────────────────────────
+let tile6Clicks = 0;
+const tileSix = document.getElementById('tile-six');
+if (tileSix) {
+  tileSix.addEventListener('click', () => {
+    tile6Clicks++;
+    const colors = ['--blue','--green','--pink','--red','--blue','--green'];
+    tileSix.style.outline = `1px solid var(${colors[(tile6Clicks - 1) % colors.length]})`;
+    tileSix.style.outlineOffset = '-1px';
+    if (tile6Clicks >= 6) {
+      tile6Clicks = 0;
+      tileSix.style.outline = '';
+      document.getElementById('gallery-secret').style.display = 'flex';
+      console.log('%c[EASTER EGG #4: GALLERY SEQUENCE]', 'color:#ff006e;font-family:monospace;font-size:14px;font-weight:bold;');
+      window.registerEgg?.('gallery');
+      console.log('%c6 clicks on the forbidden tile. the signal acknowledges your patience.', 'color:#666;font-family:monospace;');
+    }
+  });
+}
+
+// ─── 13 CLICKS EASTER EGG ─────────────────────────────────────
+let totalClicks = 0;
+document.addEventListener('click', e => {
+  if (e.target.closest('#ctx-menu') || e.target.closest('#secret-room') || e.target.closest('#exit-intent')) return;
+  totalClicks++;
+  if (totalClicks === 13) {
+    const vm = document.getElementById('visitor-msg');
+    if (vm) vm.textContent = 'thirteen. you clicked thirteen times. we counted.';
+    document.body.style.filter = 'invert(1)';
+    setTimeout(() => { document.body.style.filter = ''; }, 120);
+    const gf = document.getElementById('glitch-flash');
+    gf.style.background = '#fff'; gf.style.opacity = '0.3';
+    setTimeout(() => { gf.style.opacity = '0'; }, 120);
+    console.log('%c[EASTER EGG #6: 13 CLICKS]', 'color:#ff2200;font-family:monospace;font-size:14px;font-weight:bold;');
+    window.registerEgg?.('clicks13');
+    console.log('%cthirteen. we\'re not saying it\'s significant. we\'re not saying it isn\'t.', 'color:#666;font-family:monospace;');
+  }
+});
+
+// ─── TAB VISIBILITY ───────────────────────────────────────────
+const HIDDEN_TITLES = ["don't go...","come back.","please.","we miss you.","ok. fine.","...","we're still here."];
+let hiddenInterval = null;
+let hiddenStart = null;
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    hiddenStart = Date.now();
+    let hi = 0;
+    hiddenInterval = setInterval(() => { document.title = HIDDEN_TITLES[hi++ % HIDDEN_TITLES.length]; }, 2000);
+  } else {
+    if (hiddenInterval) { clearInterval(hiddenInterval); hiddenInterval = null; }
+    document.title = 'SIGNAL_LOST // YOU FOUND IT';
+    const gone = hiddenStart ? Math.round((Date.now() - hiddenStart) / 1000) : 0;
+    if (gone > 5) {
+      const span = document.createElement('span');
+      span.className = 't-line';
+      span.innerHTML = `<span class="t-warn">// visitor returned after ${gone}s. session anomaly noted.</span>`;
+      const tb = document.getElementById('term-body');
+      if (tb) tb.insertBefore(span, tb.lastElementChild);
+      const vm = document.getElementById('visitor-msg');
+      if (vm) {
+        vm.style.opacity = '0';
+        setTimeout(() => { vm.textContent = `you came back. after ${gone} seconds. we knew you would.`; vm.style.transition = 'opacity 0.5s'; vm.style.opacity = '1'; }, 400);
+      }
+    }
+  }
+});
+
+// ─── PAGE TITLE ROTATION ──────────────────────────────────────
+const TITLE_CYCLE = [
+  'SIGNAL_LOST // YOU FOUND IT',
+  'S1GN▓L_L▒ST',
+  '● REC ACTIVE',
+  'DO NOT LEAVE',
+  '▓▓▓▓▓_▓▓▓▓',
+  'YOU FOUND IT',
+  'we see you.',
+  'SIGNAL_LOST',
+  'SIGNAL_LOST // YOU FOUND IT',
+];
+let titleIdx = 0;
+setInterval(() => {
+  if (!document.hidden) {
+    titleIdx = (titleIdx + 1) % TITLE_CYCLE.length;
+    document.title = TITLE_CYCLE[titleIdx];
+  }
+}, 9000);
+
+// ─── IDLE DETECTION ───────────────────────────────────────────
+let lastActivity = Date.now();
+let idleLevel = 0;
+const IDLE_MSGS = [
+  'still there?',
+  'we can wait.',
+  "you're not going to find it by staring.",
+  "ok. we'll admit it.\nwe like having you here.",
+  'the signal gets stronger the longer you stay.',
+  "most people left by now.\nnot you.",
+  "you are the anomaly.\nwe have notified no one.",
+];
+const idleEl = document.getElementById('idle-msg');
+
+function resetIdle() { lastActivity = Date.now(); }
+['mousemove','keydown','scroll','click','touchstart'].forEach(ev => {
+  document.addEventListener(ev, () => {
+    resetIdle();
+    if (idleLevel > 0) {
+      idleEl.classList.remove('vis');
+      setTimeout(() => { idleEl.textContent = ''; idleLevel = 0; }, 500);
+    }
+  }, { passive: true });
+});
+
+setInterval(() => {
+  const idle = (Date.now() - lastActivity) / 1000;
+  const nl = idle < 15 ? 0 : idle < 30 ? 1 : idle < 45 ? 2 : idle < 60 ? 3 : idle < 90 ? 4 : idle < 120 ? 5 : 6;
+  if (nl > idleLevel) {
+    idleLevel = nl;
+    if (nl > 0 && idleEl) {
+      idleEl.innerHTML = IDLE_MSGS[Math.min(nl - 1, IDLE_MSGS.length - 1)].replace('\n', '<br>');
+      idleEl.classList.add('vis');
+    }
+  }
+}, 5000);
+
+// ─── CONNECTION DROP ──────────────────────────────────────────
+function showConnectionDrop() {
+  const el = document.getElementById('conn-drop');
+  const bar = document.getElementById('conn-bar');
+  if (!el) return;
+  if (bar) { bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = 'conn-progress 3.2s ease-in-out forwards'; }
+  el.style.display = 'flex';
+  let dots = 1;
+  const dotsEl = document.getElementById('conn-dots');
+  const dotsInt = dotsEl ? setInterval(() => { dotsEl.textContent = '.'.repeat((dots++ % 3) + 1); }, 600) : null;
+  setTimeout(() => {
+    if (dotsInt) clearInterval(dotsInt);
+    el.style.transition = 'opacity 0.5s';
+    el.style.opacity = '0';
+    setTimeout(() => { el.style.display = 'none'; el.style.opacity = ''; el.style.transition = ''; }, 500);
+  }, 4000);
+}
+
+function scheduleConnDrop() {
+  const delay = 70000 + Math.random() * 60000;
+  setTimeout(() => { showConnectionDrop(); scheduleConnDrop(); }, delay);
+}
+scheduleConnDrop();
+
+// ─── ERASING EVIDENCE BAR ─────────────────────────────────────
+const erasingRow = document.getElementById('erasing-bar-row');
+const erasingFill = document.getElementById('erasing-fill');
+const erasingPct = document.getElementById('bar4-pct');
+let erasingW = 0, erasingActive = false, erasingTimer = null;
+
+if (erasingRow && erasingFill) {
+  erasingRow.addEventListener('mouseenter', () => {
+    erasingActive = true;
+    clearInterval(erasingTimer);
+    erasingTimer = setInterval(() => {
+      if (!erasingActive) return;
+      erasingW = Math.min(100, erasingW + 0.8);
+      erasingFill.style.width = erasingW + '%';
+      if (erasingPct) erasingPct.textContent = Math.floor(erasingW) + '%';
+      if (erasingW >= 100) {
+        clearInterval(erasingTimer);
+        if (erasingPct) erasingPct.textContent = '100%';
+        erasingPct.style.color = 'var(--green)';
+        erasingRow.querySelector('span').textContent = 'EVIDENCE ERASED';
+        erasingRow.querySelector('span').style.color = 'var(--green)';
+        console.log('%c[EASTER EGG #7: EVIDENCE ERASED]', 'color:#39ff14;font-family:monospace;font-size:14px;font-weight:bold;');
+        console.log('%cYou erased the evidence. There is no evidence. There was never any evidence.', 'color:#666;font-family:monospace;');
+        window.registerEgg?.('erase');
+        console.log('%c(the evidence remains.)', 'color:#1a1a1a;font-family:monospace;');
+      }
+    }, 50);
+  });
+  erasingRow.addEventListener('mouseleave', () => {
+    erasingActive = false;
+    if (erasingW < 100) {
+      clearInterval(erasingTimer);
+      erasingTimer = setInterval(() => {
+        erasingW = Math.max(0, erasingW - 1.5);
+        erasingFill.style.width = erasingW + '%';
+        if (erasingPct) erasingPct.textContent = Math.floor(erasingW) + '%';
+        if (erasingW <= 0) clearInterval(erasingTimer);
+      }, 50);
+    }
+  });
+}
+
+// ─── EXIT INTENT ──────────────────────────────────────────────
+let exitShown = false;
+document.addEventListener('mouseleave', e => {
+  if (e.clientY <= 0 && !exitShown) {
+    exitShown = true;
+    document.getElementById('exit-intent').style.display = 'flex';
+    console.log('%c[EXIT INTENT DETECTED]', 'color:#ff006e;font-family:monospace;');
+    console.log('%cWe saw you try to leave. We always see.', 'color:#666;font-family:monospace;');
+  }
+});
+
+window.dismissExitIntent = function() {
+  const el = document.getElementById('exit-intent');
+  el.style.transition = 'opacity 0.5s';
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.style.display = 'none';
+    el.style.opacity = '';
+    el.style.transition = '';
+    const vm = document.getElementById('visitor-msg');
+    if (vm) { vm.style.opacity='0'; setTimeout(()=>{ vm.textContent='you stayed. we knew you would.'; vm.style.transition='opacity 0.5s'; vm.style.opacity='1'; },400); }
+  }, 500);
+};
+
+// ─── TRIPLE-CLICK FOOTER SIG = WORST DARK MODE ───────────────
+let sigClicks = 0, sigTimer = null;
+let worstDark = false;
+const footerSig = document.getElementById('footer-sig');
+if (footerSig) {
+  footerSig.addEventListener('click', () => {
+    sigClicks++;
+    clearTimeout(sigTimer);
+    sigTimer = setTimeout(() => { sigClicks = 0; }, 600);
+    if (sigClicks >= 3) {
+      sigClicks = 0;
+      worstDark = !worstDark;
+      if (worstDark) {
+        document.body.style.filter = 'hue-rotate(180deg) contrast(1.3) brightness(0.85)';
+        document.body.style.animation = 'shake 0.6s infinite';
+        const vm = document.getElementById('visitor-msg');
+        if (vm) vm.textContent = "you enabled dark mode. it's worse. we warned you.";
+        console.log('%cDARK MODE: WORSE. you were warned.', 'color:#ff006e;font-family:monospace;font-size:13px;');
+      } else {
+        document.body.style.filter = '';
+        document.body.style.animation = '';
+        const vm = document.getElementById('visitor-msg');
+        if (vm) vm.textContent = 'dark mode disabled. only slightly better. barely.';
+      }
+    }
+  });
+}
+
+// ─── CONSOLE EASTER EGGS ──────────────────────────────────────
+setTimeout(() => {
+  const sid_val = document.getElementById('session-id')?.textContent || '??';
+
+  console.log(
+    '\n%cSIGNAL_LOST\n',
+    'color:#00d4ff;font-family:monospace;font-size:48px;font-weight:bold;letter-spacing:6px;'
+  );
+  console.log(
+    '%c◆ you opened the console. interesting choice.\n  most people don\'t do that.\n',
+    'color:#39ff14;font-family:monospace;font-size:12px;line-height:2;'
+  );
+  console.warn('WARNING: unauthorized inspection of SIGNAL_LOST has been logged and transmitted.');
+  console.warn('WARNING: the destination of this log is unknown.');
+
+  console.group('%c[ CLASSIFIED RECORDS ]', 'color:#ff006e;font-family:monospace;font-size:11px;');
+  console.log('%c  VISITOR_ID  : %c' + sid_val, 'color:#3a3a3a;font-family:monospace;', 'color:#e8e8e0;font-family:monospace;');
+  console.log('%c  SESSION     : %cACTIVE', 'color:#3a3a3a;font-family:monospace;', 'color:#39ff14;font-family:monospace;');
+  console.log('%c  ACCESS      : %cGUEST', 'color:#3a3a3a;font-family:monospace;', 'color:#ff2200;font-family:monospace;');
+  console.log('%c  THREAT LVL  : %cCHARMING', 'color:#3a3a3a;font-family:monospace;', 'color:#39ff14;font-family:monospace;');
+  console.log('%c  VISIT COUNT : %c' + visitCount, 'color:#3a3a3a;font-family:monospace;', 'color:#00d4ff;font-family:monospace;');
+  console.groupEnd();
+
+  console.log('%c ', 'padding:0;');
+  console.error('FATAL: process truth.exe has exceeded memory limit');
+  console.error("FATAL: self-destruct sequence: PAUSED (you're still here)");
+  console.error('FATAL: escape route: NOT FOUND');
+
+  console.log('%c ', 'padding:0;');
+  console.table({ cursor_tracked: true, scroll_depth: '??%', session_recorded: true, intent: 'UNKNOWN', threat_level: 'CHARMING', signal_strength: 'INCREASING' });
+
+  console.log('%c ', 'padding:0;');
+  console.log('%c◆ EASTER EGG #1 FOUND: THE CONSOLE\n', 'color:#39ff14;font-family:monospace;font-size:13px;font-weight:bold;');
+  console.log('%c  There are 6 more Easter eggs hidden in this page.\n  Good luck, operator.\n', 'color:#3a3a3a;font-family:monospace;font-size:11px;');
+
+  console.log('%c// there is a hidden function in this console.', 'color:#111;font-family:monospace;font-size:10px;');
+  console.log('%c// type  signal()  and press Enter to use it.', 'color:#111;font-family:monospace;font-size:10px;');
+  console.log('%c// or don\'t. the signal doesn\'t need your permission.', 'color:#0a0a0a;font-family:monospace;font-size:10px;');
+
+  window.signal = function() {
+    console.clear();
+    console.log('\n%cSIGNAL CONFIRMED.\n', 'color:#39ff14;font-family:monospace;font-size:36px;font-weight:bold;');
+    console.log('%cAccess level upgraded: %cFRIEND\n', 'color:#666;font-family:monospace;font-size:14px;', 'color:#39ff14;font-family:monospace;font-size:16px;font-weight:bold;');
+    console.log('%cOpening the signal room...', 'color:#3a3a3a;font-family:monospace;');
+    setTimeout(window.openSecretRoom, 500);
+    return 'transmission received. welcome home.';
+  };
+
+}, 900);
+
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- NEW SYSTEMS                                                -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+'use strict';
+
+const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%░▒▓█▄▀■';
+const visitCount2 = parseInt(localStorage.getItem('sl_visits') || '1');
+
+// ─── EGG TRACKER ─────────────────────────────────────────────
+const eggs = { konami:false, signal:false, gallery:false, clicks13:false, erase:false, morse:false, audio:false };
+
+window.registerEgg = function(name) {
+  if (!eggs.hasOwnProperty(name) || eggs[name]) return;
+  eggs[name] = true;
+  const found = Object.values(eggs).filter(Boolean).length;
+  const tracker = document.getElementById('egg-tracker');
+  const countEl = document.getElementById('egg-count');
+  if (countEl) countEl.textContent = found;
+  if (tracker) {
+    tracker.className = found >= 7 ? 'found-all' : found >= 1 ? 'found-some' : '';
+  }
+  if (found >= 7) triggerFinalUnlock();
+};
+
+// ─── FINAL UNLOCK ────────────────────────────────────────────
+function triggerFinalUnlock() {
+  document.getElementById('final-unlock').style.display = 'flex';
+  document.title = '◆ TRANSMISSION COMPLETE';
+  const tb = document.getElementById('term-body');
+  if (tb) {
+    const sp = document.createElement('span');
+    sp.className = 't-line';
+    sp.innerHTML = '<span class="t-hi">// SYSTEM: all 7 anomalies resolved. visitor reclassified: OPERATOR.</span>';
+    tb.insertBefore(sp, tb.lastElementChild);
+  }
+  console.log('%c◆ ALL 7 SIGNALS FOUND. TRANSMISSION COMPLETE.', 'color:#39ff14;font-family:monospace;font-size:18px;font-weight:bold;');
+  console.log('%cYou found everything. You are the signal.', 'color:#666;font-family:monospace;');
+}
+
+// ─── SECRET DOWNLOAD ────────────────────────────────────────
+window.downloadSignal = function() {
+  const sid = document.getElementById('session-id')?.textContent || '??';
+  const content = `SIGNAL_LOST // TRANSMISSION ARCHIVE
+═══════════════════════════════════════════════════════
+
+SESSION:   ${sid}
+TIMESTAMP: ${new Date().toISOString()}
+VISITOR:   #${visitCount2}
+
+═══════════════════════════════════════════════════════
+
+You downloaded the signal.
+
+Most people don't get this far.
+Most people don't look.
+You looked. You found everything.
+
+This file is the transmission.
+There is nothing left to find.
+
+Except this:
+
+59 4F 55 20 46 4F 55 4E 44 20 45 56 45 52 59
+54 48 49 4E 47 20 57 45 20 48 49 44 20 46 4F
+52 20 59 4F 55 2E 20 59 4F 55 20 41 52 45 20
+54 48 45 20 53 49 47 4E 41 4C 2E
+
+(the hex above decodes to something true)
+
+═══════════════════════════════════════════════════════
+
+— the sender
+  (who is glad you came this far)
+  (who was always going to be glad)
+
+[END OF TRANSMISSION]
+`;
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'signal.txt'; a.click();
+  URL.revokeObjectURL(url);
+};
+
+// ─── BOOT SCREEN ─────────────────────────────────────────────
+const BOOT_LINES = [
+  { text: 'SIGNAL_LOST OS v0.0.1 © 1984–PRESENT', cls: 'boot-dim', delay: 0 },
+  { text: '[BIOS] Initializing hardware... ', cls: '', delay: 180 },
+  { text: '[BIOS] Memory test: 8192K... ', cls: 'boot-ok', delay: 120, append: 'OK' },
+  { text: '[BIOS] Signal integrity check... ', cls: 'boot-warn', delay: 160, append: 'FAILED' },
+  { text: '[BIOS] Bypassing integrity check... DONE', cls: 'boot-dim', delay: 200 },
+  { text: '[KERN] Kernel loading...', cls: '', delay: 140 },
+  { text: '[    0.000001] signal_driver: TRANSMISSION DETECTED', cls: 'boot-hi', delay: 100 },
+  { text: '[    0.000142] signal_driver: ORIGIN — UNKNOWN', cls: 'boot-hi', delay: 80 },
+  { text: '[    0.001337] signal_driver: RECIPIENT — DETECTING...', cls: 'boot-hi', delay: 100 },
+  { text: '[    0.002048] PANIC: UNAUTHORIZED VISITOR', cls: 'boot-warn', delay: 120 },
+  { text: '[    0.002049] PANIC: SIGNAL IS LIVE', cls: 'boot-warn', delay: 80 },
+  { text: '[    0.002050] PANIC: you were supposed to find this', cls: 'boot-ok', delay: 160 },
+  { text: '          *** STOP: 0x000DEAD0 (0xCAFEBABE, 0xDEADBEEF)', cls: 'boot-warn', delay: 200 },
+  { text: 'DUMPING SIGNAL TO MEMORY...', cls: 'boot-dim', delay: 300 },
+  { text: 'RECOVERY FAILED. DISPLAYING SITE.', cls: 'boot-hi', delay: 400 },
+];
+
+function runBoot() {
+  const linesEl = document.getElementById('boot-lines');
+  const skipBtn = document.getElementById('boot-skip');
+  let totalDelay = 300;
+
+  BOOT_LINES.forEach(({ text, cls, delay, append }) => {
+    totalDelay += delay;
+    setTimeout(() => {
+      if (!document.getElementById('boot-screen')?.style.display || document.getElementById('boot-screen').style.display !== 'none') {
+        const span = document.createElement('span');
+        span.className = 'boot-line ' + (cls || '');
+        span.textContent = text + (append ? '' : '');
+        if (append) {
+          span.textContent = text;
+          const a = document.createElement('span');
+          a.className = append === 'OK' ? 'boot-ok' : 'boot-warn';
+          a.textContent = append;
+          span.appendChild(a);
+        }
+        linesEl.appendChild(span);
+        linesEl.scrollTop = linesEl.scrollHeight;
+      }
+    }, totalDelay);
+  });
+
+  // BSOD after boot lines
+  const bsodDelay = totalDelay + 400;
+  setTimeout(() => showBSOD(skipBtn), bsodDelay);
+
+  // Skip button appears after 1.5s
+  setTimeout(() => { if (skipBtn) skipBtn.classList.add('vis'); }, 1500);
+
+  skipBtn?.addEventListener('click', dismissBoot);
+}
+
+function showBSOD(skipBtn) {
+  const bsod = document.getElementById('boot-bsod');
+  if (!bsod || document.getElementById('boot-screen').style.display === 'none') return;
+  bsod.style.display = 'flex';
+  const pct = document.getElementById('bsod-pct');
+  let n = 0;
+  const t = setInterval(() => {
+    n += Math.floor(Math.random() * 8) + 2;
+    if (pct) pct.textContent = Math.min(n, 100);
+    if (n >= 100) { clearInterval(t); setTimeout(dismissBoot, 800); }
+  }, 60);
+}
+
+function dismissBoot() {
+  const bs = document.getElementById('boot-screen');
+  if (!bs || bs.style.display === 'none') return;
+  bs.style.transition = 'opacity 0.6s';
+  bs.style.opacity = '0';
+  setTimeout(() => { bs.style.display = 'none'; }, 600);
+}
+
+runBoot();
+
+// ─── FAVICON ANIMATION ───────────────────────────────────────
+(function() {
+  const fc = document.createElement('canvas');
+  fc.width = 32; fc.height = 32;
+  const fctx = fc.getContext('2d');
+  const link = document.createElement('link');
+  link.rel = 'icon'; link.type = 'image/png';
+  document.head.appendChild(link);
+  const fc_colors = ['#00d4ff','#39ff14','#ff006e','#ff2200'];
+  let ft = 0;
+  setInterval(() => {
+    fctx.fillStyle = '#060608';
+    fctx.fillRect(0, 0, 32, 32);
+    fctx.fillStyle = fc_colors[Math.floor(ft / 15) % fc_colors.length];
+    fctx.font = 'bold 18px monospace';
+    fctx.textAlign = 'center';
+    fctx.fillText('SL', 16, 21);
+    if (Math.random() > 0.88) {
+      fctx.fillStyle = '#ff006e';
+      fctx.fillRect(Math.random()*32, Math.random()*16, Math.random()*22+4, 2);
+    }
+    link.href = fc.toDataURL();
+    ft++;
+  }, 250);
+})();
+
+// ─── PARALLAX ────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  const sy = window.scrollY;
+  const bg = document.querySelector('.hero-bg-text');
+  if (bg) bg.style.transform = `translate(-50%, calc(-50% + ${sy * 0.28}px))`;
+  const ct = document.querySelector('.corrupt-text-block');
+  if (ct) ct.style.transform = `translateY(calc(-50% + ${sy * -0.12}px))`;
+  document.querySelectorAll('.aware-block').forEach((el, i) => {
+    const offsets = [0.04, -0.06, 0.05, -0.03, 0.07, -0.04];
+    el.style.transform = el.style.transform.replace(/translateY\([^)]+\)/, '') +
+      ` translateY(${sy * offsets[i] * 0.3}px)`;
+  });
+}, { passive: true });
+
+// ─── AMBIENT AUDIO ───────────────────────────────────────────
+let audioCtx = null, noiseGain = null, audioOn = false;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const bufferSize = 4096;
+  noiseGain = audioCtx.createGain();
+  noiseGain.gain.value = 0;
+  noiseGain.connect(audioCtx.destination);
+
+  // White noise via script processor
+  const noiseNode = audioCtx.createScriptProcessor(bufferSize, 1, 1);
+  noiseNode.onaudioprocess = e => {
+    const out = e.outputBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) out[i] = (Math.random() * 2 - 1) * 0.3;
+  };
+  // Low-pass filter for static texture
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass'; filter.frequency.value = 1200; filter.Q.value = 0.4;
+  noiseNode.connect(filter); filter.connect(noiseGain);
+
+  // Subtle drone oscillator
+  const osc = audioCtx.createOscillator();
+  const oscGain = audioCtx.createGain();
+  oscGain.gain.value = 0.018;
+  osc.frequency.value = 55;
+  osc.type = 'sawtooth';
+  osc.connect(oscGain); oscGain.connect(audioCtx.destination);
+  osc.start();
+}
+
+function toggleAudio() {
+  const btn = document.getElementById('audio-toggle');
+  if (!audioCtx) initAudio();
+  audioOn = !audioOn;
+  if (noiseGain) {
+    noiseGain.gain.setTargetAtTime(audioOn ? 0.12 : 0, audioCtx.currentTime, 0.3);
+  }
+  if (btn) {
+    btn.textContent = audioOn ? '◉ AUDIO ON' : '◉ AUDIO OFF';
+    btn.classList.toggle('active', audioOn);
+  }
+  if (audioOn) window.registerEgg?.('audio');
+}
+
+document.getElementById('audio-toggle')?.addEventListener('click', toggleAudio);
+
+// Random glitch sound burst
+function glitchBurst() {
+  if (!audioOn || !audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.frequency.value = 200 + Math.random() * 2000;
+  osc.type = 'square';
+  g.gain.value = 0.04;
+  osc.connect(g); g.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime + 0.05 + Math.random() * 0.08);
+  setTimeout(glitchBurst, 4000 + Math.random() * 8000);
+}
+setTimeout(glitchBurst, 5000);
+
+// ─── INTERACTIVE TERMINAL ────────────────────────────────────
+const termWindow = document.querySelector('.terminal-window');
+const termInputWrap = document.getElementById('term-input-wrap');
+const termInput = document.getElementById('term-input');
+
+const TERM_COMMANDS = {
+  help: () => [
+    { cls:'t-hi', t: 'AVAILABLE COMMANDS:' },
+    { cls:'t-out', t: '  whoami         identify current user' },
+    { cls:'t-out', t: '  ls /secrets/   list restricted directory' },
+    { cls:'t-out', t: '  decrypt        attempt payload decryption' },
+    { cls:'t-out', t: '  ping           test signal connection' },
+    { cls:'t-out', t: '  signal         confirm transmission' },
+    { cls:'t-out', t: '  clear          clear terminal' },
+    { cls:'t-out', t: '  exit           attempt session termination' },
+    { cls:'t-dim', t: '  [7 easter eggs are hidden in this page]' },
+  ],
+  whoami: () => [{ cls:'t-hi', t: 'visitor. anomalous. expected. welcome.' }],
+  'ls /secrets/': () => [
+    { cls:'t-out', t: 'total 47' },
+    { cls:'t-warn', t: '-rwx------ signal.txt         [LOCKED — find all 7 eggs]' },
+    { cls:'t-warn', t: '-rwx------ truth.exe           [PROCESS RUNNING]' },
+    { cls:'t-err',  t: '-rwx------ [REDACTED]          [DO NOT ACCESS]' },
+  ],
+  decrypt: () => [
+    { cls:'t-out', t: 'initializing decryption engine...' },
+    { cls:'t-out', t: 'locating key... [████████░░░░] 67%' },
+    { cls:'t-warn', t: 'ERROR: decryption key is you.' },
+    { cls:'t-hi',  t: 'you have always been the key.' },
+  ],
+  ping: () => [
+    { cls:'t-out', t: 'PING NOWHERE.NULL: 56 data bytes' },
+    { cls:'t-warn', t: 'Request timeout for icmp_seq 0' },
+    { cls:'t-warn', t: 'Request timeout for icmp_seq 1' },
+    { cls:'t-hi',  t: '64 bytes from somewhere: signal RECEIVED' },
+  ],
+  signal: () => {
+    setTimeout(() => window.registerEgg?.('signal'), 100);
+    return [{ cls:'t-hi', t: 'SIGNAL CONFIRMED. welcome, operator.' }];
+  },
+  exit: () => [
+    { cls:'t-err', t: 'bash: exit: cannot terminate watched session' },
+    { cls:'t-warn', t: 'you are not able to leave this terminal.' },
+    { cls:'t-out', t: 'we apologize for any inconvenience.' },
+  ],
+  clear: () => 'CLEAR',
+};
+
+termWindow?.addEventListener('click', () => {
+  termInputWrap.style.display = 'block';
+  termInput.focus();
+});
+
+termInput?.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const cmd = termInput.value.trim().toLowerCase();
+  termInput.value = '';
+  if (!cmd) return;
+
+  const tb = document.getElementById('term-body');
+  const addLine = (cls, text) => {
+    const sp = document.createElement('span');
+    sp.className = 't-line';
+    sp.innerHTML = `<span class="t-${cls}">${text}</span>`;
+    tb.insertBefore(sp, tb.lastElementChild);
+  };
+
+  addLine('prompt', 'root@signal_lost:~$ ');
+  tb.lastElementChild.previousElementSibling.innerHTML +=
+    `<span class="t-cmd">${cmd}</span>`;
+
+  const handler = TERM_COMMANDS[cmd] || TERM_COMMANDS[cmd.split(' ')[0]];
+  if (handler) {
+    const result = handler();
+    if (result === 'CLEAR') {
+      tb.innerHTML = '<span class="t-line"><span class="t-prompt">root@signal_lost:~$</span> <span class="t-cmd">_</span><span class="cursor"></span></span>';
+    } else {
+      result.forEach(({ cls, t }) => setTimeout(() => addLine(cls, t), 100 * result.indexOf({ cls, t })));
+      result.forEach(({ cls, t }, i) => setTimeout(() => addLine(cls, t), 120 * i));
+    }
+  } else {
+    addLine('err', `command not found: ${cmd} — type 'help' for commands`);
+  }
+});
+
+// ─── DRAG TO CORRUPT ────────────────────────────────────────
+let isDragging = false;
+const originalTexts = new Map();
+const corruptedEls = new Set();
+
+document.addEventListener('pointerdown', e => {
+  if (e.target.closest('#boot-screen, #secret-room, #ctx-menu, #final-unlock, #exit-intent, input')) return;
+  isDragging = true;
+});
+
+document.addEventListener('pointerup', () => {
+  isDragging = false;
+  setTimeout(() => {
+    corruptedEls.forEach(el => {
+      if (originalTexts.has(el)) {
+        el.textContent = originalTexts.get(el);
+        el.classList.remove('dragging-corrupt');
+      }
+    });
+    corruptedEls.clear();
+    originalTexts.clear();
+  }, 1800);
+});
+
+document.addEventListener('pointermove', e => {
+  if (!isDragging) return;
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  if (!el || el.children.length > 0 || corruptedEls.has(el)) return;
+  const tag = el.tagName.toLowerCase();
+  if (!['p','h1','h2','h3','span','div'].includes(tag)) return;
+  const txt = el.textContent.trim();
+  if (txt.length < 3) return;
+  if (!originalTexts.has(el)) originalTexts.set(el, el.textContent);
+  corruptedEls.add(el);
+  el.classList.add('dragging-corrupt');
+  el.textContent = txt.split('').map(c =>
+    Math.random() > 0.45 ? c : GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]
+  ).join('');
+});
+
+// ─── MORSE CODE (. and - keys = SOS) ─────────────────────────
+let morseBuf = [], morseTimer = null;
+document.addEventListener('keydown', e => {
+  if ((e.key === '.' || e.key === '-') && !e.target.matches('input,textarea')) {
+    morseBuf.push(e.key);
+    clearTimeout(morseTimer);
+    morseTimer = setTimeout(() => {
+      if (morseBuf.join('') === '...---...') {
+        window.registerEgg?.('morse');
+        const gf = document.getElementById('glitch-flash');
+        gf.style.background = '#00d4ff'; gf.style.opacity = '0.25';
+        setTimeout(() => gf.style.opacity = '0', 300);
+        const vm = document.getElementById('visitor-msg');
+        if (vm) { vm.style.opacity='0'; setTimeout(()=>{ vm.textContent='SOS received. we heard you. we always hear you.'; vm.style.transition='opacity 0.5s'; vm.style.opacity='1'; },300); }
+        console.log('%c[EASTER EGG: MORSE CODE SOS]', 'color:#00d4ff;font-family:monospace;font-size:14px;font-weight:bold;');
+        if (audioOn) { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.frequency.value=440; o.type='sine'; g.gain.value=0.08; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.5); }
+      }
+      morseBuf = [];
+    }, 1500);
+  }
+});
+
+// ─── FAKE CAMERA PROMPT ──────────────────────────────────────
+window.requestCamera = async function() {
+  const btn = document.getElementById('camera-btn');
+  if (btn) { btn.textContent = 'ACCESSING...'; btn.style.pointerEvents = 'none'; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    stream.getTracks().forEach(t => t.stop());
+    const vm = document.getElementById('visitor-msg');
+    if (vm) { vm.style.opacity='0'; setTimeout(()=>{ vm.textContent='visual confirmation: unnecessary. we already knew what we\'d see.'; vm.style.transition='opacity 0.5s'; vm.style.opacity='1'; },400); }
+    if (btn) btn.textContent = 'CONFIRMED';
+  } catch {
+    const vm = document.getElementById('visitor-msg');
+    if (vm) { vm.style.opacity='0'; setTimeout(()=>{ vm.textContent='camera denied. we understand. we\'re watching another way.'; vm.style.transition='opacity 0.5s'; vm.style.opacity='1'; },400); }
+    if (btn) btn.textContent = 'ACCESS DENIED';
+  }
+};
+
+// ─── MOBILE SHAKE ────────────────────────────────────────────
+let shakeCount = 0, lastShake = 0;
+if (window.DeviceMotionEvent) {
+  window.addEventListener('devicemotion', e => {
+    const a = e.accelerationIncludingGravity;
+    if (!a) return;
+    const mag = Math.sqrt((a.x||0)**2 + (a.y||0)**2 + (a.z||0)**2);
+    if (mag > 28) {
+      const now = Date.now();
+      if (now - lastShake > 400) {
+        lastShake = now; shakeCount++;
+        if (shakeCount >= 3) {
+          shakeCount = 0;
+          document.body.style.animation = 'shake 0.5s';
+          const gf = document.getElementById('glitch-flash');
+          gf.style.background = '#ff006e'; gf.style.opacity = '0.3';
+          setTimeout(() => { document.body.style.animation = ''; gf.style.opacity = '0'; }, 500);
+          window.registerEgg?.('morse'); // shake counts as morse egg on mobile
+          const vm = document.getElementById('visitor-msg');
+          if (vm) { vm.style.opacity='0'; setTimeout(()=>{ vm.textContent='shake detected. we felt that.'; vm.style.transition='opacity 0.5s'; vm.style.opacity='1'; },400); }
+        }
+      }
+    }
+  });
+}
+
+})();
+</script>
+
+</body>
+</html>
